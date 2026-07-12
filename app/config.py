@@ -42,4 +42,119 @@ class Settings(BaseSettings):
     should be defined in this class.
     """
 
-   
+    # Configure how settings are loaded.
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        case_sensitive=False,
+    )
+
+    # ==================================================
+    # Telegram
+    # ==================================================
+
+    # Telegram Bot Token.
+    #
+    # This value is required.
+    bot_token: str
+
+    # ==================================================
+    # Application
+    # ==================================================
+
+    # Current application environment.
+    #
+    # Examples:
+    # development
+    # testing
+    # production
+    environment: str = "production"
+
+    # Enable debug mode.
+    debug: bool = False
+
+    # ==================================================
+    # Logging
+    # ==================================================
+
+    # Default logging level.
+    #
+    # Environment example:
+    #
+    # LOG_LEVEL=DEBUG
+    #
+    # Supported values:
+    #
+    # DEBUG
+    # INFO
+    # WARNING
+    # ERROR
+    # CRITICAL
+    log_level: int = logging.INFO
+
+    # ==================================================
+    # Network
+    # ==================================================
+
+    # HTTP request timeout (seconds).
+    request_timeout: int = 30
+
+    # Maximum simultaneous HTTP connections.
+    max_connections: int = 20
+
+    # ==================================================
+    # Scraper
+    # ==================================================
+
+    # Delay between scraper requests (seconds).
+    scraper_delay: float = 1.0
+
+    # ==================================================
+    # Cache
+    # ==================================================
+
+    # Cache lifetime (seconds).
+    cache_ttl: int = 300
+
+    # ==================================================
+    # Validators
+    # ==================================================
+
+    @field_validator("log_level", mode="before")
+    @classmethod
+    def validate_log_level(cls, value: object) -> int:
+        """
+        Convert logging level names into logging constants.
+        """
+
+        # Already a valid integer.
+        if isinstance(value, int):
+            return value
+
+        # Convert string values.
+        if isinstance(value, str):
+
+            levels = {
+                "DEBUG": logging.DEBUG,
+                "INFO": logging.INFO,
+                "WARNING": logging.WARNING,
+                "ERROR": logging.ERROR,
+                "CRITICAL": logging.CRITICAL,
+            }
+
+            level = levels.get(value.upper())
+
+            if level is not None:
+                return level
+
+        raise ValueError(
+            "Invalid LOG_LEVEL value."
+        )
+
+
+# Create one shared Settings instance.
+#
+# Import this object everywhere instead of creating
+# additional Settings() instances.
+settings = Settings()
