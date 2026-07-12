@@ -1,48 +1,48 @@
 """
 start.py
 
-This module handles the /start command.
+Handle the /start Telegram command.
 
-Every time a user sends /start,
-the function inside this file will be executed.
+This module contains the function that is executed
+when a user sends the /start command.
 """
 
 # Import the Update class.
 #
-# Update represents a single event received from Telegram.
+# Update represents everything Telegram sends to our bot.
 #
-# An event can be:
+# For example:
 # - A message
 # - A command
-# - A button click
 # - A photo
-# - A document
+# - A button click
 #
-# In this project we mainly receive messages.
+# In this file we only care about the /start command.
 from telegram import Update
 
 
 # Import ContextTypes.
 #
-# Context gives our function access
-# to useful information provided
-# by python-telegram-bot.
+# Context contains useful information and tools
+# provided by the Telegram framework.
 #
-# We do not need it yet,
-# but we include it because
-# almost every handler uses it.
+# We do not use it yet,
+# but almost every handler receives it.
 from telegram.ext import ContextTypes
 
 
-# Create a function that handles the /start command.
+# Import the welcome message.
 #
-# async means this function runs asynchronously.
+# All user-facing messages are stored inside messages.py.
 #
-# Telegram bots spend a lot of time waiting
-# for network responses.
+# This keeps the code clean and makes future translation easier.
+from app.messages import WELCOME_MESSAGE
+
+
+# Create the function that handles the /start command.
 #
-# Using async allows the bot
-# to serve many users efficiently.
+# "async" allows the bot to handle many users efficiently
+# without blocking while waiting for Telegram's response.
 async def start(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
@@ -52,7 +52,7 @@ async def start(
 
     Args:
         update:
-            Information about the current Telegram update.
+            Information about the incoming Telegram update.
 
         context:
             Extra data provided by the Telegram framework.
@@ -61,28 +61,24 @@ async def start(
         None
     """
 
-    # Create the welcome message.
+    # Prevent IDE and linter warnings.
     #
-    # Keeping the message inside a variable
-    # makes the code easier to read.
-    #
-    # Later we will move all messages
-    # into messages.py.
-    welcome_message = (
-        "👋 Welcome to Lanoo!\n\n"
-        "Lanoo helps you compare prices "
-        "for baby and family products.\n\n"
-        "More features are coming soon."
-    )
+    # We don't use "context" yet,
+    # but we will use it later.
+    _ = context
 
-    # Send the welcome message
-    # back to the same chat
-    # where the command was received.
+    # Make sure a message actually exists.
     #
-    # update.message represents
-    # the incoming Telegram message.
+    # This is a safety check.
+    # Normally /start always has a message,
+    # but defensive programming is a good habit.
+    if update.message is None:
+        return
+
+    # Send the welcome message to the user.
     #
-    # reply_text() sends a text message.
+    # reply_text() sends a normal text message
+    # back to the same chat.
     await update.message.reply_text(
-        welcome_message
-    ) 
+        text=WELCOME_MESSAGE
+    )
