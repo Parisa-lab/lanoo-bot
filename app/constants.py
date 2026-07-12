@@ -3,17 +3,15 @@ constants.py
 
 Store application constants.
 
-This module contains values that are fixed during the
-lifetime of the application.
+Only application-wide constants belong here.
 
-Do NOT store configuration values here.
+Do NOT store:
 
-Examples of configuration values:
-- Bot Token
-- Database URL
-- Logging Level
+- Telegram commands
+- Environment variables
+- Configuration values
 
-Those values belong in config.py.
+Those belong in their own dedicated modules.
 """
 
 # ==========================================================
@@ -26,36 +24,13 @@ BOT_NAME = "Lanoo"
 # Current application version.
 APP_VERSION = "1.0.0"
 
-
-# ==========================================================
-# Telegram Commands
-# ==========================================================
-
-# Command executed when the user starts the bot.
-START_COMMAND = "start"
-
-# Command that displays help information.
-HELP_COMMAND = "help"
-
-# Command used to search product prices.
-PRICE_COMMAND = "price"
-
-
 # ==========================================================
 # Application Limits
 # ==========================================================
 
-# Maximum length of a product name accepted
-# from the user.
-#
-# This value helps prevent extremely long
-# messages and unnecessary processing.
+# Maximum accepted product name length.
 MAX_PRODUCT_NAME_LENGTH = 100
 
-
-# Maximum number of search results returned
-# to the user.
-#
-# Showing too many products makes the bot
-# difficult to use.
+# Maximum number of products returned
+# from a search.
 MAX_SEARCH_RESULTS = 10
