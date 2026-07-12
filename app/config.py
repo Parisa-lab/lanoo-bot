@@ -3,18 +3,24 @@ config.py
 
 Load application configuration.
 
-Configuration values are loaded from environment
-variables instead of being hardcoded.
+This module is responsible for loading configuration
+values from environment variables.
 
-This improves security and allows the application
-to run in different environments without changing
-the source code.
+Configuration values may change between environments
+(local development, Railway, Docker, etc.), so they
+must never be hardcoded inside the application logic.
 """
+
+# Import the logging module.
+#
+# We use its predefined logging constants instead
+# of plain strings such as "INFO" or "DEBUG".
+import logging
 
 # Import the os module.
 #
-# This module allows Python to read
-# environment variables from the operating system.
+# This module allows Python to read environment
+# variables from the operating system.
 import os
 
 
@@ -22,22 +28,14 @@ import os
 # Telegram Configuration
 # ==========================================================
 
-# Read the Telegram bot token from
-# the environment variables.
+# Read the Telegram bot token from the environment.
 #
-# The token should NEVER be stored
-# directly inside the source code.
+# Never store the bot token directly inside the source code.
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-
-# Make sure the token exists.
-#
-# If BOT_TOKEN is missing,
-# stop the application immediately.
-#
-# Running a Telegram bot without a token
-# is impossible.
-if BOT_TOKEN is None:
+# Stop the application immediately if the token
+# has not been configured.
+if not BOT_TOKEN:
     raise RuntimeError(
         "BOT_TOKEN environment variable is missing."
     )
@@ -49,17 +47,11 @@ if BOT_TOKEN is None:
 
 # Default parse mode.
 #
-# None means plain text messages.
+# None means plain text.
 #
-# Later we can change this to:
-#
-# "HTML"
-#
-# or
-#
-# "MarkdownV2"
-#
-# without modifying other files.
+# Later we may change this to:
+# - "HTML"
+# - "MarkdownV2"
 DEFAULT_PARSE_MODE = None
 
 
@@ -69,13 +61,13 @@ DEFAULT_PARSE_MODE = None
 
 # Default logging level.
 #
-# Available values include:
+# We use the logging module constants instead of strings.
 #
-# DEBUG
-# INFO
-# WARNING
-# ERROR
-# CRITICAL
+# Available options include:
 #
-# The logger module will use this value.
-LOG_LEVEL = "INFO"
+# logging.DEBUG
+# logging.INFO
+# logging.WARNING
+# logging.ERROR
+# logging.CRITICAL
+LOG_LEVEL = logging.INFO
