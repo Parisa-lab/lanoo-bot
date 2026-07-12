@@ -5,61 +5,80 @@ Create and start the Telegram bot.
 
 This module is responsible for:
 
-- Creating the Application object.
-- Registering command handlers.
+- Creating the Telegram Application.
+- Registering all command handlers.
 - Starting the bot.
 """
 
+# Import the logging module.
+#
+# Logging is much better than using print().
+# It helps us monitor the application
+# and diagnose problems.
+import logging
+
+
 # Import the Application class.
 #
-# Application is the heart of every Telegram bot.
-# It receives updates from Telegram and dispatches
-# them to the correct command handlers.
+# Application is the main object of every Telegram bot.
 from telegram.ext import Application
 
 
 # Import the CommandHandler class.
 #
-# CommandHandler is responsible for commands such as:
-#
-# /start
-# /help
-# /price
-#
-# Each command will be connected to one function.
+# CommandHandler connects Telegram commands
+# to Python functions.
 from telegram.ext import CommandHandler
 
 
-# Import the bot token from config.py.
+# Import the bot token.
 #
-# The token is stored inside Railway
-# as an environment variable.
-#
-# config.py reads it and makes it available here.
+# The token is loaded from environment variables
+# inside config.py.
 from app.config import BOT_TOKEN
 
 
-# Import the function that handles the /start command.
+# Import command names.
 #
-# Whenever a user sends /start,
-# this function will be executed.
-from app.handlers import start
+# Keeping command names in constants.py
+# avoids hardcoding strings.
+from app.constants import (
+    START_COMMAND,
+)
+
+
+# Import command handlers.
+#
+# The handlers package exports all public handlers.
+from app.handlers import (
+    start,
+)
+
+
+# Create a logger for this module.
+#
+# Every module should have its own logger.
+logger = logging.getLogger(__name__)
 
 
 def run_bot() -> None:
     """
-    Build and start the Telegram bot.
+    Create and start the Telegram bot.
+
+    Returns:
+        None
     """
 
-    # Create the Telegram Application.
+    # Write an informational log message.
+    logger.info("Creating Telegram application.")
+
+    # Create the Telegram application.
     #
-    # Think of this as creating the bot itself.
+    # builder() creates a builder object.
     #
-    # The builder() method creates a builder object.
+    # token() sets the bot token.
     #
-    # Then we provide the bot token.
-    #
-    # Finally, build() creates the Application instance.
+    # build() creates the Application instance.
     application = (
         Application
         .builder()
@@ -69,40 +88,17 @@ def run_bot() -> None:
 
     # Register the /start command.
     #
-    # CommandHandler connects a Telegram command
-    # to a Python function.
-    #
-    # When the user sends:
-    #
-    # /start
-    #
-    # Telegram will execute:
-    #
-    # start()
-    #
+    # When a user sends /start,
+    # the start() function will run.
     application.add_handler(
         CommandHandler(
-            "start",
+            START_COMMAND,
             start,
         )
     )
 
-    # Print a message to the console.
-    #
-    # This helps us know that
-    # the bot started successfully.
-    print("Lanoo Bot started successfully.")
+    # Write another log message.
+    logger.info("Starting polling...")
 
     # Start listening for Telegram updates.
-    #
-    # Polling means:
-    #
-    # "Telegram, do you have any new messages?"
-    #
-    # The bot asks Telegram this question
-    # many times every second.
-    #
-    # If a new message arrives,
-    # Telegram sends it back,
-    # and the correct handler is executed.
     application.run_polling()
