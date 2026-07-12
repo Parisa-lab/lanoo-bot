@@ -1,55 +1,81 @@
 """
 config.py
 
-Application configuration.
+Load application configuration.
 
-This module is responsible for loading all configuration
-values required by the application.
+Configuration values are loaded from environment
+variables instead of being hardcoded.
 
-Configuration values are read from environment variables
-instead of being hardcoded in the source code.
+This improves security and allows the application
+to run in different environments without changing
+the source code.
 """
 
-# Import Python's built-in operating system module.
+# Import the os module.
 #
-# The os module allows Python to interact with the operating system.
-#
-# One of its features is reading environment variables.
+# This module allows Python to read
+# environment variables from the operating system.
 import os
 
 
-# Read the Telegram bot token from the environment.
+# ==========================================================
+# Telegram Configuration
+# ==========================================================
+
+# Read the Telegram bot token from
+# the environment variables.
 #
-# Railway stores secret values as environment variables.
-#
-# Example:
-#
-# BOT_TOKEN = 123456789:AA......
-#
-# We NEVER put this token directly inside our code.
-#
-# os.getenv("BOT_TOKEN") means:
-#
-# "Find an environment variable called BOT_TOKEN.
-# If it exists, return its value.
-# Otherwise, return None."
+# The token should NEVER be stored
+# directly inside the source code.
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 
-# Check whether the token was found.
+# Make sure the token exists.
 #
-# If BOT_TOKEN is None,
-# the application cannot connect to Telegram.
+# If BOT_TOKEN is missing,
+# stop the application immediately.
 #
-# Instead of failing later,
-# we stop immediately and show a clear error message.
+# Running a Telegram bot without a token
+# is impossible.
 if BOT_TOKEN is None:
-
-    # Raise an exception.
-    #
-    # RuntimeError tells Python that the program
-    # cannot continue because something important
-    # is missing.
     raise RuntimeError(
         "BOT_TOKEN environment variable is missing."
-    ) 
+    )
+
+
+# ==========================================================
+# Telegram Settings
+# ==========================================================
+
+# Default parse mode.
+#
+# None means plain text messages.
+#
+# Later we can change this to:
+#
+# "HTML"
+#
+# or
+#
+# "MarkdownV2"
+#
+# without modifying other files.
+DEFAULT_PARSE_MODE = None
+
+
+# ==========================================================
+# Logging Configuration
+# ==========================================================
+
+# Default logging level.
+#
+# Available values include:
+#
+# DEBUG
+# INFO
+# WARNING
+# ERROR
+# CRITICAL
+#
+# The logger module will use this value.
+LOG_LEVEL = "INFO"
