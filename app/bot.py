@@ -89,10 +89,10 @@ def run_bot() -> None:
     # When a user sends /start,
     # the start() function will run.
     application.add_handler(
-        CommandHandler(
-            START_COMMAND,
-            start,
-        )
+       CommandHandler(
+           START_COMMAND,
+           start_handler,
+       )
     )
 
     # Write another log message.
