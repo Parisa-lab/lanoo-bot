@@ -13,16 +13,16 @@ Never hardcode secrets such as API keys or tokens
 inside the source code.
 """
 
-# Import the logging module.
-#
-# Logging constants such as logging.INFO are used
-# as default values for the application.
+# Import Python's logging module.
 import logging
 
-# Import BaseSettings.
+# Import field validator.
 #
-# BaseSettings automatically loads configuration
-# values from environment variables.
+# Validators allow us to validate or transform
+# configuration values before they are used.
+from pydantic import field_validator
+
+# Import Pydantic Settings.
 from pydantic_settings import BaseSettings
 from pydantic_settings import SettingsConfigDict
 
@@ -41,16 +41,11 @@ class Settings(BaseSettings):
     """
 
     # Configure Pydantic Settings.
-    #
-    # Railway ignores the .env file and injects
-    # environment variables automatically.
-    #
-    # During local development, values are loaded
-    # from the .env file if it exists.
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
+        case_sensitive=False,
     )
 
     # ======================================================
@@ -60,7 +55,6 @@ class Settings(BaseSettings):
     # Telegram Bot Token.
     #
     # This value is required.
-    # The application cannot start without it.
     bot_token: str
 
     # ======================================================
@@ -69,7 +63,7 @@ class Settings(BaseSettings):
 
     # Current application environment.
     #
-    # Typical values:
+    # Allowed values typically include:
     #
     # development
     # testing
@@ -85,20 +79,18 @@ class Settings(BaseSettings):
 
     # Default logging level.
     #
-    # Available values:
+    # Environment examples:
     #
-    # logging.DEBUG
-    # logging.INFO
-    # logging.WARNING
-    # logging.ERROR
-    # logging.CRITICAL
+    # LOG_LEVEL=INFO
+    # LOG_LEVEL=DEBUG
+    # LOG_LEVEL=WARNING
     log_level: int = logging.INFO
 
     # ======================================================
     # Network
     # ======================================================
 
-    # Maximum time to wait for HTTP requests.
+    # HTTP request timeout in seconds.
     request_timeout: int = 30
 
     # Maximum simultaneous HTTP connections.
@@ -108,9 +100,7 @@ class Settings(BaseSettings):
     # Scraper
     # ======================================================
 
-    # Delay between HTTP requests.
-    #
-    # This helps avoid sending requests too quickly.
+    # Delay between scraper requests.
     scraper_delay: float = 1.0
 
     # ======================================================
@@ -120,9 +110,51 @@ class Settings(BaseSettings):
     # Cache lifetime in seconds.
     cache_ttl: int = 300
 
+    # ======================================================
+    # Validators
+    # ======================================================
+
+    @field_validator("log_level", mode="before")
+    @classmethod
+    def validate_log_level(cls, value: object) -> int:
+        """
+        Convert log level names into logging constants.
+
+        Examples:
+
+        INFO      -> logging.INFO
+        DEBUG     -> logging.DEBUG
+        WARNING   -> logging.WARNING
+        ERROR     -> logging.ERROR
+        CRITICAL  -> logging.CRITICAL
+        """
+
+        # Already an integer.
+        if isinstance(value, int):
+            return value
+
+        # Convert strings.
+        if isinstance(value, str):
+
+            level = value.upper()
+
+            mapping = {
+                "DEBUG": logging.DEBUG,
+                "INFO": logging.INFO,
+                "WARNING": logging.WARNING,
+                "ERROR": logging.ERROR,
+                "CRITICAL": logging.CRITICAL,
+            }
+
+            if level in mapping:
+                return mapping[level]
+
+        raise ValueError(
+            "Invalid LOG_LEVEL value."
+        )
+
 
 # Create a shared Settings instance.
 #
-# Import this object everywhere instead of creating
-# additional Settings instances.
+# Every module should import this object.
 settings = Settings()
