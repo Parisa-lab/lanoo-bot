@@ -3,17 +3,21 @@ messages.py
 
 Store all user-facing messages.
 
-This module contains every text shown to users.
+This module contains every message shown to users.
 
-Keeping messages separate from the application logic
-makes the project easier to maintain, translate,
-and update.
+Keeping messages in a dedicated module has several
+advantages:
+
+- The application logic stays clean.
+- Messages can be updated without changing handlers.
+- Adding multiple languages becomes much easier.
+- All user-facing text is stored in one place.
 """
 
 # Import application constants.
 #
-# The bot name is defined in one place
-# so we never hardcode it.
+# The bot name is defined in one place so it is
+# never hardcoded throughout the project.
 from app.constants import BOT_NAME
 
 
@@ -21,10 +25,10 @@ from app.constants import BOT_NAME
 # Welcome Messages
 # ==========================================================
 
-# Message displayed when the user sends /start.
+# Message displayed when the user starts the bot.
 #
-# The f-string allows us to insert the bot name
-# automatically.
+# The bot name is inserted automatically using
+# an f-string.
 WELCOME_MESSAGE = (
     f"👋 Welcome to {BOT_NAME}!\n\n"
     "Your smart assistant for comparing prices of "
@@ -37,7 +41,10 @@ WELCOME_MESSAGE = (
 # Help Messages
 # ==========================================================
 
-# Message displayed when the user sends /help.
+# Message displayed when the user requests help.
+#
+# This message should always reflect the currently
+# supported Telegram commands.
 HELP_MESSAGE = (
     "Available commands:\n\n"
     "/start - Start the bot\n"
@@ -47,18 +54,63 @@ HELP_MESSAGE = (
 
 
 # ==========================================================
+# Price Search Messages
+# ==========================================================
+
+# Ask the user to enter a product name.
+ASK_PRODUCT_NAME_MESSAGE = (
+    "Please enter the product name you want to search for."
+)
+
+
+# Displayed while the bot is searching.
+SEARCHING_MESSAGE = (
+    "Searching for the best prices..."
+)
+
+
+# Displayed when no products are found.
+NO_PRODUCTS_FOUND_MESSAGE = (
+    "No matching products were found."
+)
+
+
+# ==========================================================
 # Error Messages
 # ==========================================================
 
-# Message displayed when the user enters
+# Displayed when the user sends
 # an unsupported command.
 UNKNOWN_COMMAND_MESSAGE = (
     "Sorry, I don't recognize that command."
 )
 
 
-# Message displayed when an unexpected error occurs.
+# Displayed when something unexpected happens.
 INTERNAL_ERROR_MESSAGE = (
     "Something went wrong.\n"
     "Please try again later."
+)
+
+
+# Displayed when the user's input
+# is not valid.
+INVALID_INPUT_MESSAGE = (
+    "The information you entered is not valid."
+)
+
+
+# ==========================================================
+# General Messages
+# ==========================================================
+
+# Generic success message.
+SUCCESS_MESSAGE = (
+    "Done successfully."
+)
+
+
+# Generic cancellation message.
+CANCELLED_MESSAGE = (
+    "Operation cancelled."
 )
