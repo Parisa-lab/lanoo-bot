@@ -1,11 +1,16 @@
 """
 messages.py
 
-Store all user-facing messages in one place.
+Store every message shown to users.
 
-Keeping messages separate from the business logic makes
-the project easier to maintain, translate, and extend.
+Keeping messages separate from the application logic
+makes future maintenance much easier.
+
+If we decide to support multiple languages later,
+only this file will need major changes.
 """
+
+from app.constants import BOT_NAME
 
 
 # ---------------------------------------------------------------------
@@ -13,10 +18,10 @@ the project easier to maintain, translate, and extend.
 # ---------------------------------------------------------------------
 
 WELCOME_MESSAGE = (
-    "👋 Welcome to Lanoo!\n\n"
-    "Your smart assistant for comparing prices of baby "
-    "and family products.\n\n"
-    "Use /help to see the available commands."
+    f"👋 Welcome to {BOT_NAME}!\n\n"
+    "Your smart assistant for comparing prices "
+    "of baby and family products.\n\n"
+    "Type /help to see available commands."
 )
 
 
@@ -25,10 +30,13 @@ WELCOME_MESSAGE = (
 # ---------------------------------------------------------------------
 
 HELP_MESSAGE = (
-    "Available commands:\n\n"
+    "Available commands\n\n"
+
     "/start - Start the bot\n"
-    "/help - Show this help message\n"
-    "/price - Search for a product price"
+
+    "/help - Show help information\n"
+
+    "/price - Search product prices"
 )
 
 
