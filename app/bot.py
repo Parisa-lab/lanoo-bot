@@ -1,102 +1,66 @@
 """
 bot.py
 
-Create and start the Telegram bot.
+Create and run the Telegram bot.
 
 This module is responsible for:
 
 - Creating the Telegram Application.
-- Registering all command handlers.
+- Registering all handlers.
 - Starting the bot.
 """
 
 # Import the logging module.
 #
-# Logging is much better than using print().
-# It helps us monitor the application
-# and diagnose problems.
+# Logging is used instead of print() because it
+# provides structured and configurable output.
 import logging
 
-
-# Import the Application class.
-#
-# Application is the main object of every Telegram bot.
-from telegram.ext import Application
-
-
-# Import the CommandHandler class.
-#
-# CommandHandler connects Telegram commands
-# to Python functions.
-from telegram.ext import CommandHandler
-
-
-# Import the bot token.
-#
-# The token is loaded from environment variables
-# inside config.py.
-from app.config import BOT_TOKEN
-
-
-# Import command names.
-#
-# Keeping command names in constants.py
-# avoids hardcoding strings.
-from app.constants import (
-    START_COMMAND,
+# Import Telegram classes.
+from telegram.ext import (
+    Application,
 )
 
-
-# Import command handlers.
+# Import application settings.
 #
-# The handlers package exports all public handlers.
-from app.handlers import start_handler
+# The bot token is loaded from environment variables
+# using Pydantic Settings.
+from app.config import settings
 
+# Import Telegram-specific configuration.
+from app.telegram_config import (
+    DEFAULT_PARSE_MODE,
+    ALLOWED_UPDATES,
+)
 
-# Create a logger for this module.
+# Import the logging configuration.
 #
-# Every module should have its own logger.
+# setup_logging() configures the logging system
+# before the bot starts.
+from app.logger import setup_logging
+
+# Import the function that registers every handler.
+from app.handlers import register_handlers
+
+
+# Create a logger dedicated to this module.
 logger = logging.getLogger(__name__)
 
 
-def run_bot() -> None:
+class LanooBot:
     """
-    Create and start the Telegram bot.
+    Telegram bot controller.
 
-    Returns:
-        None
+    This class is responsible for creating,
+    configuring and running the Telegram bot.
     """
 
-    # Write an informational log message.
-    logger.info("Creating Telegram application.")
+    def __init__(self) -> None:
+        """
+        Initialize the bot.
+        """
 
-    # Create the Telegram application.
-    #
-    # builder() creates a builder object.
-    #
-    # token() sets the bot token.
-    #
-    # build() creates the Application instance.
-    application = (
-        Application
-        .builder()
-        .token(BOT_TOKEN)
-        .build()
-    )
+        # Configure the logging system.
+        setup_logging()
 
-    # Register the /start command.
-    #
-    # When a user sends /start,
-    # the start() function will run.
-    application.add_handler(
-       CommandHandler(
-           START_COMMAND,
-           start_handler,
-       )
-    )
-
-    # Write another log message.
-    logger.info("Starting polling...")
-
-    # Start listening for Telegram updates.
-    application.run_polling()
+        logger.info("Creating Telegram application...
