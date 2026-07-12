@@ -2,87 +2,77 @@
 logger.py
 
 Configure the application's logging system.
-
-Every module in the project should use Python's logging
-module instead of print().
-
-Features:
-
-- Colored console output
-- File logging
-- Configurable log level
-- Production-ready configuration
 """
 
-# Import the logging module.
-#
-# This is Python's built-in logging framework.
 import logging
-
-# Import RotatingFileHandler.
-#
-# This handler automatically creates new log files
-# when the current log file reaches its size limit.
 from logging.handlers import RotatingFileHandler
-
-# Import Path.
-#
-# Path provides a platform-independent way to work
-# with file system paths.
 from pathlib import Path
 
-# Import ColoredFormatter.
-#
-# colorlog adds colors to console logs, making them
-# easier to read during development.
 from colorlog import ColoredFormatter
 
-# Import application settings.
 from app.config import settings
 
 
 def setup_logging() -> None:
     """
-    Configure the application's logging system.
-
-    This function should be called only once when the
-    application starts.
-
-    Returns:
-        None.
+    Configure application logging.
     """
 
-    # Create the logs directory if it does not exist.
-    log_directory = Path("logs")
-    log_directory.mkdir(
-        exist_ok=True,
-    )
-
-    # Create the root logger.
     logger = logging.getLogger()
 
-    # Set the minimum logging level.
-    logger.setLevel(
-        settings.log_level,
-    )
-
-    # Prevent duplicate handlers if this function
-    # is called more than once.
+    # Prevent duplicate handlers.
     if logger.handlers:
         return
 
-    # ==========================================
+    logger.setLevel(settings.log_level)
+
+    # Create logs directory.
+    log_directory = Path("logs")
+    log_directory.mkdir(exist_ok=True)
+
+    # ----------------------------
     # Console Handler
-    # ==========================================
+    # ----------------------------
 
     console_handler = logging.StreamHandler()
 
     console_formatter = ColoredFormatter(
         "%(log_color)s%(levelname)-8s%(reset)s | "
-        "%(blue)s%(name)s%(reset)s | "
-        "%(message)s",
+       "%(blue)s%(name)s%(reset)s | "
+       "%(message)s",
         log_colors={
             "DEBUG": "cyan",
             "INFO": "green",
             "WARNING": "yellow",
-            
+            "ERROR": "red",
+            "CRITICAL": "bold_red",
+        },
+    )
+
+    console_handler.setFormatter(console_formatter)
+
+    # ----------------------------
+    # File Handler
+    # ----------------------------
+
+    file_handler = RotatingFileHandler(
+        filename=log_directory / "lanoo.log",
+        maxBytes=5 * 1024 * 1024,
+        backupCount=5,
+        encoding="utf-8",
+    )
+
+    file_formatter = logging.Formatter(
+        "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+    )
+
+    file_handler.setFormatter(file_formatter)
+
+    # ----------------------------
+    # Register handlers
+    # ----------------------------
+
+    logger.addHandler(console_handler)
+    logger.addHandler(file_handler)
+
+    logger.info("Logging system initialized successfully.")
