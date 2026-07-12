@@ -3,19 +3,12 @@ config.py
 
 Load application configuration.
 
-This module is responsible for loading configuration
-values from environment variables.
+This module is responsible for loading application-wide
+configuration values from environment variables.
 
-Configuration values may change between environments
-(local development, Railway, Docker, etc.), so they
-must never be hardcoded inside the application logic.
+Configuration values may differ between environments
+(local development, Railway, Docker, etc.).
 """
-
-# Import the logging module.
-#
-# We use its predefined logging constants instead
-# of plain strings such as "INFO" or "DEBUG".
-import logging
 
 # Import the os module.
 #
@@ -25,49 +18,17 @@ import os
 
 
 # ==========================================================
-# Telegram Configuration
+# Telegram Bot Configuration
 # ==========================================================
 
-# Read the Telegram bot token from the environment.
+# Read the Telegram bot token.
 #
-# Never store the bot token directly inside the source code.
+# Never hardcode secrets inside the source code.
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-# Stop the application immediately if the token
+# Stop the application if the token
 # has not been configured.
 if not BOT_TOKEN:
     raise RuntimeError(
         "BOT_TOKEN environment variable is missing."
     )
-
-
-# ==========================================================
-# Telegram Settings
-# ==========================================================
-
-# Default parse mode.
-#
-# None means plain text.
-#
-# Later we may change this to:
-# - "HTML"
-# - "MarkdownV2"
-DEFAULT_PARSE_MODE = None
-
-
-# ==========================================================
-# Logging Configuration
-# ==========================================================
-
-# Default logging level.
-#
-# We use the logging module constants instead of strings.
-#
-# Available options include:
-#
-# logging.DEBUG
-# logging.INFO
-# logging.WARNING
-# logging.ERROR
-# logging.CRITICAL
-LOG_LEVEL = logging.INFO
