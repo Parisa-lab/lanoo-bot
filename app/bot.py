@@ -50,9 +50,7 @@ from app.constants import (
 # Import command handlers.
 #
 # The handlers package exports all public handlers.
-from app.handlers import (
-    start,
-)
+from app.handlers import start_handler
 
 
 # Create a logger for this module.
