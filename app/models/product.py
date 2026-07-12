@@ -3,80 +3,54 @@ product.py
 
 Define the Product model.
 
-A Product object represents a single product returned
-by a scraper.
+Every scraper must return Product objects.
 
-Every scraper must return Product objects instead of
-dictionaries.
-
-Using a model provides:
-
-- Better readability.
-- Type safety.
-- Easier maintenance.
-- Better IDE support.
+Never use dictionaries to represent products.
 """
 
-# Import dataclass.
-#
-# A dataclass automatically generates useful methods
-# such as __init__(), __repr__(), and __eq__().
-from dataclasses import dataclass
-
-# Import Optional.
-#
-# Optional means the value may be None.
 from typing import Optional
 
+from pydantic import Field
+from pydantic import HttpUrl
 
-@dataclass(slots=True)
-class Product:
+from app.models.base import BaseSchema
+
+
+class Product(BaseSchema):
     """
     Represent a product.
-
-    Every scraper should create and return Product
-    instances.
-
-    Attributes:
-        name:
-            Product name.
-
-        price:
-            Product price in the original currency.
-
-        currency:
-            Currency code.
-
-        store:
-            Store name.
-
-        url:
-            Product page URL.
-
-        image_url:
-            Product image URL.
-
-        available:
-            Whether the product is available.
     """
 
     # Product name.
-    name: str
+    name: str = Field(
+        min_length=1,
+        max_length=200,
+    )
 
     # Product price.
-    price: int
+    #
+    # Always stored as an integer.
+    price: int = Field(
+        ge=0,
+    )
 
     # Currency code.
-    currency: str
+    currency: str = Field(
+        min_length=3,
+        max_length=10,
+    )
 
     # Store name.
-    store: str
+    store: str = Field(
+        min_length=1,
+        max_length=100,
+    )
 
-    # Product page URL.
-    url: str
+    # Product page.
+    url: HttpUrl
 
-    # Product image.
-    image_url: Optional[str] = None
+    # Optional image.
+    image_url: Optional[HttpUrl] = None
 
     # Product availability.
     available: bool = True
