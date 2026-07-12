@@ -1,90 +1,96 @@
 """
-handlers package
+handlers/__init__.py
 
-Register all Telegram command handlers.
+Register all Telegram handlers.
 
-This module acts as the single entry point for every
-Telegram handler used by the application.
+This module is the single entry point for registering
+every handler used by the application.
 
-When a new handler is added, it only needs to be
-imported and registered here.
-
-The rest of the application never needs to change.
+Whenever a new handler is added, it should be imported
+and registered here. No other module should register
+handlers directly.
 """
 
 # Import Telegram classes.
 #
-# Application is the central object used to register
-# command handlers.
+# Application is the main Telegram application object.
+# CommandHandler connects Telegram commands to handler
+# functions.
 from telegram.ext import (
     Application,
     CommandHandler,
 )
 
-# Import command names.
+# Import Telegram commands.
 #
-# Keeping command names inside constants.py avoids
+# Command names are stored separately to avoid
 # hardcoding strings throughout the project.
-from app.constants import (
-    START_COMMAND,
-    HELP_COMMAND,
-    PRICE_COMMAND,
+from app.commands import (
+    START,
+    HELP,
+    PRICE,
 )
 
 # Import handler functions.
-from .start import start_handler
+#
+# Every command has its own dedicated handler module.
+from app.handlers.start import start_handler
 
-# The following handlers will be implemented later.
+# These handlers will be created later.
 #
-# Uncomment these imports when the files are created.
+# Uncomment the imports after the files exist.
 #
-# from .help import help_handler
-# from .price import price_handler
+# from app.handlers.help import help_handler
+# from app.handlers.price import price_handler
 
 
 def register_handlers(
     application: Application,
 ) -> None:
     """
-    Register every Telegram command handler.
+    Register every Telegram handler.
 
     Args:
         application:
             The Telegram Application instance.
 
     Returns:
-        None
+        None.
     """
 
-    # ==============================================
+    # ======================================================
     # /start
-    # ==============================================
+    # ======================================================
 
     application.add_handler(
         CommandHandler(
-            START_COMMAND,
+            START,
             start_handler,
         )
     )
 
-    # ==============================================
+    # ======================================================
     # /help
-    # ==============================================
+    # ======================================================
 
+    # Uncomment after help.py is implemented.
+    #
     # application.add_handler(
     #     CommandHandler(
-    #         HELP_COMMAND,
+    #         HELP,
     #         help_handler,
     #     )
     # )
 
-    # ==============================================
+    # ======================================================
     # /price
-    # ==============================================
+    # ======================================================
 
+    # Uncomment after price.py is implemented.
+    #
     # application.add_handler(
     #     CommandHandler(
-    #         PRICE_COMMAND,
+    #         PRICE,
     #         price_handler,
     #     )
     # )
