@@ -3,32 +3,62 @@ config.py
 
 Load application configuration.
 
-This module is responsible for loading application-wide
-configuration values from environment variables.
+This module centralizes all configuration values used by
+the application.
 
-Configuration values may differ between environments
-(local development, Railway, Docker, etc.).
+Configuration is loaded from environment variables using
+Pydantic Settings.
+
+Advantages:
+
+- Automatic validation
+- Type safety
+- Better error messages
+- Easier maintenance
+- Support for .env files
 """
 
-# Import the os module.
+# Import Pydantic Settings.
 #
-# This module allows Python to read environment
-# variables from the operating system.
-import os
+# BaseSettings automatically loads values from
+# environment variables and .env files.
+from pydantic_settings import BaseSettings
+from pydantic_settings import SettingsConfigDict
 
 
-# ==========================================================
-# Telegram Bot Configuration
-# ==========================================================
+class Settings(BaseSettings):
+    """
+    Application settings.
 
-# Read the Telegram bot token.
-#
-# Never hardcode secrets inside the source code.
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+    Every configuration value used by the application
+    should be defined here.
+    """
 
-# Stop the application if the token
-# has not been configured.
-if not BOT_TOKEN:
-    raise RuntimeError(
-        "BOT_TOKEN environment variable is missing."
+    # Configure Pydantic Settings.
+    #
+    # .env support is useful for local development.
+    #
+    # Railway ignores this file and uses its own
+    # environment variables automatically.
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
+
+    # ======================================================
+    # Telegram Configuration
+    # ======================================================
+
+    # Telegram Bot Token.
+    #
+    # This value is required.
+    # The application will fail to start if it is missing.
+    bot_token: str
+
+
+# Create one shared Settings instance.
+#
+# Every module should import this object instead of
+# creating a new Settings() instance.
+settings = Settings()
