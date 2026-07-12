@@ -1,84 +1,59 @@
 """
 start.py
 
-Handle the /start Telegram command.
+Handle the /start command.
 
-This module contains the function that is executed
-when a user sends the /start command.
+This module contains the handler responsible for
+welcoming new users when they start the bot.
 """
 
-# Import the Update class.
+# Import Telegram classes.
 #
-# Update represents everything Telegram sends to our bot.
-#
-# For example:
-# - A message
-# - A command
-# - A photo
-# - A button click
-#
-# In this file we only care about the /start command.
+# Update contains information about the incoming
+# Telegram update.
 from telegram import Update
 
-
-# Import ContextTypes.
-#
-# Context contains useful information and tools
-# provided by the Telegram framework.
-#
-# We do not use it yet,
-# but almost every handler receives it.
+# ContextTypes provides the correct type hints
+# for the callback context.
 from telegram.ext import ContextTypes
-
 
 # Import the welcome message.
 #
-# All user-facing messages are stored inside messages.py.
-#
-# This keeps the code clean and makes future translation easier.
+# All user-facing messages are stored inside
+# messages.py.
 from app.messages import WELCOME_MESSAGE
 
 
-# Create the function that handles the /start command.
-#
-# "async" allows the bot to handle many users efficiently
-# without blocking while waiting for Telegram's response.
-async def start(
+async def start_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
     """
     Handle the /start command.
 
+    This function sends the welcome message
+    to the user.
+
     Args:
         update:
-            Information about the incoming Telegram update.
+            Incoming Telegram update.
 
         context:
-            Extra data provided by the Telegram framework.
+            Telegram callback context.
 
     Returns:
-        None
+        None.
     """
 
-    # Prevent IDE and linter warnings.
+    # The Update object normally contains a Message
+    # when the user sends a command.
     #
-    # We don't use "context" yet,
-    # but we will use it later.
-    _ = context
-
-    # Make sure a message actually exists.
-    #
-    # This is a safety check.
-    # Normally /start always has a message,
-    # but defensive programming is a good habit.
+    # This check prevents unexpected runtime errors
+    # if the update does not include a message.
     if update.message is None:
         return
 
-    # Send the welcome message to the user.
-    #
-    # reply_text() sends a normal text message
-    # back to the same chat.
+    # Send the welcome message.
     await update.message.reply_text(
-        text=WELCOME_MESSAGE
+        text=WELCOME_MESSAGE,
     )
