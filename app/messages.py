@@ -3,21 +3,22 @@ messages.py
 
 Store all user-facing messages.
 
-This module contains every message shown to users.
+This module contains every message displayed to users.
 
-Keeping messages in a dedicated module has several
-advantages:
+Keeping messages separate from the application logic
+provides several benefits:
 
-- The application logic stays clean.
-- Messages can be updated without changing handlers.
-- Adding multiple languages becomes much easier.
-- All user-facing text is stored in one place.
+- Cleaner code.
+- Easier maintenance.
+- Easier localization.
+- Easier testing.
+- Consistent user experience.
 """
 
 # Import application constants.
 #
-# The bot name is defined in one place so it is
-# never hardcoded throughout the project.
+# The bot name is defined in one place and reused
+# throughout the application.
 from app.constants import BOT_NAME
 
 
@@ -25,10 +26,7 @@ from app.constants import BOT_NAME
 # Welcome Messages
 # ==========================================================
 
-# Message displayed when the user starts the bot.
-#
-# The bot name is inserted automatically using
-# an f-string.
+# Welcome message displayed after /start.
 WELCOME_MESSAGE = (
     f"👋 Welcome to {BOT_NAME}!\n\n"
     "Your smart assistant for comparing prices of "
@@ -41,12 +39,9 @@ WELCOME_MESSAGE = (
 # Help Messages
 # ==========================================================
 
-# Message displayed when the user requests help.
-#
-# This message should always reflect the currently
-# supported Telegram commands.
+# Help message listing all supported commands.
 HELP_MESSAGE = (
-    "Available commands:\n\n"
+    "Available commands\n\n"
     "/start - Start the bot\n"
     "/help - Show this help message\n"
     "/price - Search product prices"
@@ -62,16 +57,65 @@ ASK_PRODUCT_NAME_MESSAGE = (
     "Please enter the product name you want to search for."
 )
 
-
-# Displayed while the bot is searching.
+# Displayed while the search is running.
 SEARCHING_MESSAGE = (
     "Searching for the best prices..."
 )
 
-
-# Displayed when no products are found.
+# Displayed when no matching products are found.
 NO_PRODUCTS_FOUND_MESSAGE = (
     "No matching products were found."
+)
+
+# Template used when products are found.
+#
+# Example:
+#
+# Found 8 matching products.
+PRODUCTS_FOUND_MESSAGE = (
+    "Found {count} matching products."
+)
+
+# Template used for every product.
+#
+# Example:
+#
+# Baby Stroller
+# 💰 Price: 18,900,000 IRR
+# 🛒 Store: Torob
+PRODUCT_TEMPLATE = (
+    "📦 {name}\n"
+    "💰 Price: {price}\n"
+    "🏪 Store: {store}"
+)
+
+# Template used when displaying a product link.
+#
+# Example:
+#
+# 🔗 https://...
+PRODUCT_LINK_TEMPLATE = (
+    "🔗 {url}"
+)
+
+
+# ==========================================================
+# Validation Messages
+# ==========================================================
+
+# Displayed when the user sends invalid input.
+INVALID_INPUT_MESSAGE = (
+    "The information you entered is not valid."
+)
+
+# Displayed when the product name is too long.
+PRODUCT_NAME_TOO_LONG_MESSAGE = (
+    "The product name is too long."
+)
+
+# Displayed when the product name is empty.
+EMPTY_PRODUCT_NAME_MESSAGE = (
+    "Please enter a product name."
 )
 
 
@@ -79,24 +123,26 @@ NO_PRODUCTS_FOUND_MESSAGE = (
 # Error Messages
 # ==========================================================
 
-# Displayed when the user sends
-# an unsupported command.
+# Displayed when an unknown command is received.
 UNKNOWN_COMMAND_MESSAGE = (
     "Sorry, I don't recognize that command."
 )
 
-
-# Displayed when something unexpected happens.
+# Displayed when an unexpected error occurs.
 INTERNAL_ERROR_MESSAGE = (
     "Something went wrong.\n"
     "Please try again later."
 )
 
+# Displayed when a website cannot be reached.
+NETWORK_ERROR_MESSAGE = (
+    "Unable to connect to the requested website."
+)
 
-# Displayed when the user's input
-# is not valid.
-INVALID_INPUT_MESSAGE = (
-    "The information you entered is not valid."
+# Displayed when the request takes too long.
+TIMEOUT_MESSAGE = (
+    "The request timed out.\n"
+    "Please try again."
 )
 
 
@@ -104,13 +150,14 @@ INVALID_INPUT_MESSAGE = (
 # General Messages
 # ==========================================================
 
-# Generic success message.
 SUCCESS_MESSAGE = (
-    "Done successfully."
+    "Operation completed successfully."
 )
 
-
-# Generic cancellation message.
 CANCELLED_MESSAGE = (
     "Operation cancelled."
+)
+
+COMING_SOON_MESSAGE = (
+    "This feature is coming soon."
 )
