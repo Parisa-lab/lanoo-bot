@@ -10,7 +10,7 @@ Each handler is responsible for exactly one command.
 #
 # This allows us to import it directly from
 # the handlers package.
-from .start import start
+from .start import start_handler
 
 
 # Define the public objects of this package.
@@ -20,5 +20,5 @@ from .start import start
 #
 # This also makes the package interface clearer.
 __all__ = [
-    "start",
+    "start_handler",
 ]
