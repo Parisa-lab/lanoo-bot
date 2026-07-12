@@ -1,27 +1,28 @@
 """
 config.py
 
-Load application configuration.
+Load and validate application settings.
 
-This module centralizes all configuration values used by
-the application.
+This module is the single source of truth for every
+configuration value used by the application.
 
-Configuration is loaded from environment variables using
-Pydantic Settings.
+Configuration values are loaded from environment
+variables or from a local .env file.
 
-Advantages:
-
-- Automatic validation
-- Type safety
-- Better error messages
-- Easier maintenance
-- Support for .env files
+Never hardcode secrets such as API keys or tokens
+inside the source code.
 """
 
-# Import Pydantic Settings.
+# Import the logging module.
 #
-# BaseSettings automatically loads values from
-# environment variables and .env files.
+# Logging constants such as logging.INFO are used
+# as default values for the application.
+import logging
+
+# Import BaseSettings.
+#
+# BaseSettings automatically loads configuration
+# values from environment variables.
 from pydantic_settings import BaseSettings
 from pydantic_settings import SettingsConfigDict
 
@@ -30,16 +31,22 @@ class Settings(BaseSettings):
     """
     Application settings.
 
-    Every configuration value used by the application
-    should be defined here.
+    Every configurable value should be defined here.
+
+    Values are loaded in the following order:
+
+    1. Environment variables
+    2. .env file
+    3. Default values
     """
 
     # Configure Pydantic Settings.
     #
-    # .env support is useful for local development.
-    #
-    # Railway ignores this file and uses its own
+    # Railway ignores the .env file and injects
     # environment variables automatically.
+    #
+    # During local development, values are loaded
+    # from the .env file if it exists.
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -47,18 +54,75 @@ class Settings(BaseSettings):
     )
 
     # ======================================================
-    # Telegram Configuration
+    # Telegram
     # ======================================================
 
     # Telegram Bot Token.
     #
     # This value is required.
-    # The application will fail to start if it is missing.
+    # The application cannot start without it.
     bot_token: str
 
+    # ======================================================
+    # Application
+    # ======================================================
 
-# Create one shared Settings instance.
+    # Current application environment.
+    #
+    # Typical values:
+    #
+    # development
+    # testing
+    # production
+    environment: str = "production"
+
+    # Enable or disable debug mode.
+    debug: bool = False
+
+    # ======================================================
+    # Logging
+    # ======================================================
+
+    # Default logging level.
+    #
+    # Available values:
+    #
+    # logging.DEBUG
+    # logging.INFO
+    # logging.WARNING
+    # logging.ERROR
+    # logging.CRITICAL
+    log_level: int = logging.INFO
+
+    # ======================================================
+    # Network
+    # ======================================================
+
+    # Maximum time to wait for HTTP requests.
+    request_timeout: int = 30
+
+    # Maximum simultaneous HTTP connections.
+    max_connections: int = 20
+
+    # ======================================================
+    # Scraper
+    # ======================================================
+
+    # Delay between HTTP requests.
+    #
+    # This helps avoid sending requests too quickly.
+    scraper_delay: float = 1.0
+
+    # ======================================================
+    # Cache
+    # ======================================================
+
+    # Cache lifetime in seconds.
+    cache_ttl: int = 300
+
+
+# Create a shared Settings instance.
 #
-# Every module should import this object instead of
-# creating a new Settings() instance.
+# Import this object everywhere instead of creating
+# additional Settings instances.
 settings = Settings()
