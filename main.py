@@ -1,53 +1,58 @@
 """
 main.py
 
-Project entry point.
+Application entry point.
 
-This file is intentionally kept very small.
+This module is responsible for starting the Telegram bot.
 
-Its only responsibility is to start the application.
-
-All business logic lives inside the app package.
+Execution starts here when the application is launched.
 """
 
-# Import the function that starts the Telegram bot.
+# Import Python's logging module.
 #
-# We DO NOT write the startup code here.
-#
-# Instead, we import it from app.bot.
-#
-# Why?
-#
-# Because every file should have only ONE responsibility.
-#
-# main.py should only start the project.
-#
-# app.bot should know HOW to start the bot.
-#
-from app.bot import run_bot
+# Used to report unexpected startup errors.
+import logging
+import sys
+
+# Import the Telegram bot.
+from app.bot import LanooBot
 
 
-# __name__ is a special variable created automatically by Python.
-#
-# Every Python file has this variable.
-#
-# If Python runs THIS file directly,
-#
-#     python main.py
-#
-# then __name__ becomes "__main__"
-#
-# But if another file imports main.py,
-#
-# __name__ becomes "main"
-#
-# This prevents the bot from starting automatically
-# when another file imports main.py.
-#
+# Create a logger for this module.
+logger = logging.getLogger(__name__)
+
+
+def main() -> None:
+    """
+    Start the application.
+
+    This function creates the Telegram bot and starts
+    the polling loop.
+
+    Returns:
+        None.
+    """
+
+    try:
+        # Create the bot instance.
+        bot = LanooBot()
+
+        # Start the bot.
+        bot.run()
+
+    except KeyboardInterrupt:
+        # The application was stopped manually.
+        logger.info("Application stopped by user.")
+
+    except Exception:
+        # Log the complete exception traceback.
+        logger.exception(
+            "Application terminated because of an unexpected error."
+        )
+
+        # Exit with a non-zero status code.
+        sys.exit(1)
+
+
 if __name__ == "__main__":
-
-    # Start the Telegram bot.
-    #
-    # This calls the function located inside app.bot.
-    #
-    run_bot()
+    main()
