@@ -1,163 +1,157 @@
 """
 messages.py
 
-Store all user-facing messages.
+Store every user-facing message used by the application.
 
-This module contains every message displayed to users.
+This module contains only static text.
 
-Keeping messages separate from the application logic
-provides several benefits:
-
-- Cleaner code.
-- Easier maintenance.
-- Easier localization.
-- Easier testing.
-- Consistent user experience.
+If a message requires dynamic values such as product
+name, price or store, it should be formatted inside
+message_formatter.py instead of this module.
 """
-
-# Import application constants.
-#
-# The bot name is defined in one place and reused
-# throughout the application.
-from app.constants import BOT_NAME
-
 
 # ==========================================================
 # Welcome Messages
 # ==========================================================
 
-# Welcome message displayed after /start.
-WELCOME_MESSAGE = (
-    f"👋 Welcome to {BOT_NAME}!\n\n"
-    "Your smart assistant for comparing prices of "
-    "baby and family products.\n\n"
-    "Use /help to see the available commands."
-)
+WELCOME_MESSAGE = """
+👋 <b>Welcome to Lanoo!</b>
 
+Lanoo helps you compare product prices across multiple
+online stores.
+
+Simply send a product name using the command below:
+
+<code>/price iPhone 15 Pro</code>
+
+You can also type:
+
+<code>/help</code>
+
+to see all available commands.
+"""
 
 # ==========================================================
 # Help Messages
 # ==========================================================
 
-# Help message listing all supported commands.
-HELP_MESSAGE = (
-    "Available commands\n\n"
-    "/start - Start the bot\n"
-    "/help - Show this help message\n"
-    "/price - Search product prices"
-)
+HELP_MESSAGE = """
+<b>Available Commands</b>
 
+<b>/start</b>
+Start the bot.
 
-# ==========================================================
-# Price Search Messages
-# ==========================================================
+<b>/help</b>
+Show this help message.
 
-# Ask the user to enter a product name.
-ASK_PRODUCT_NAME_MESSAGE = (
-    "Please enter the product name you want to search for."
-)
+<b>/price &lt;product name&gt;</b>
+Search for product prices.
 
-# Displayed while the search is running.
-SEARCHING_MESSAGE = (
-    "Searching for the best prices..."
-)
+Example:
 
-# Displayed when no matching products are found.
-NO_PRODUCTS_FOUND_MESSAGE = (
-    "No matching products were found."
-)
-
-# Template used when products are found.
-#
-# Example:
-#
-# Found 8 matching products.
-PRODUCTS_FOUND_MESSAGE = (
-    "Found {count} matching products."
-)
-
-# Template used for every product.
-#
-# Example:
-#
-# Baby Stroller
-# 💰 Price: 18,900,000 IRR
-# 🛒 Store: Torob
-PRODUCT_TEMPLATE = (
-    "📦 {name}\n"
-    "💰 Price: {price}\n"
-    "🏪 Store: {store}"
-)
-
-# Template used when displaying a product link.
-#
-# Example:
-#
-# 🔗 https://...
-PRODUCT_LINK_TEMPLATE = (
-    "🔗 {url}"
-)
-
+<code>/price AirPods Pro 2</code>
+"""
 
 # ==========================================================
-# Validation Messages
+# Price Command Messages
 # ==========================================================
 
-# Displayed when the user sends invalid input.
-INVALID_INPUT_MESSAGE = (
-    "The information you entered is not valid."
-)
+PRICE_USAGE_MESSAGE = """
+Please enter a product name.
 
-# Displayed when the product name is too long.
-PRODUCT_NAME_TOO_LONG_MESSAGE = (
-    "The product name is too long."
-)
+Example:
 
-# Displayed when the product name is empty.
-EMPTY_PRODUCT_NAME_MESSAGE = (
-    "Please enter a product name."
-)
+<code>/price iPhone 15 Pro</code>
+"""
 
+SEARCHING_MESSAGE = """
+🔎 Searching for the best prices...
+
+Please wait...
+"""
+
+NO_PRODUCTS_FOUND_MESSAGE = """
+❌ No products were found.
+
+Try using a different product name.
+"""
+
+PRODUCTS_FOUND_MESSAGE = """
+✅ Found <b>{count}</b> matching product(s).
+"""
+
+# ==========================================================
+# Product Templates
+# ==========================================================
+
+PRODUCT_TEMPLATE = """
+🛍 <b>{name}</b>
+
+💰 Price: <b>{price}</b>
+
+🏪 Store: <b>{store}</b>
+"""
+
+PRODUCT_LINK_TEMPLATE = """
+🔗 {url}
+"""
 
 # ==========================================================
 # Error Messages
 # ==========================================================
 
-# Displayed when an unknown command is received.
-UNKNOWN_COMMAND_MESSAGE = (
-    "Sorry, I don't recognize that command."
-)
+UNKNOWN_COMMAND_MESSAGE = """
+❌ Unknown command.
 
-# Displayed when an unexpected error occurs.
-INTERNAL_ERROR_MESSAGE = (
-    "Something went wrong.\n"
-    "Please try again later."
-)
+Type
 
-# Displayed when a website cannot be reached.
-NETWORK_ERROR_MESSAGE = (
-    "Unable to connect to the requested website."
-)
+<code>/help</code>
 
-# Displayed when the request takes too long.
-TIMEOUT_MESSAGE = (
-    "The request timed out.\n"
-    "Please try again."
-)
+to see all available commands.
+"""
 
+UNEXPECTED_ERROR_MESSAGE = """
+⚠️ Something went wrong.
+
+Please try again later.
+"""
+
+NETWORK_ERROR_MESSAGE = """
+🌐 Network error.
+
+Please try again in a few minutes.
+"""
+
+TIMEOUT_ERROR_MESSAGE = """
+⌛ The request timed out.
+
+Please try again.
+"""
 
 # ==========================================================
-# General Messages
+# Validation Messages
 # ==========================================================
 
-SUCCESS_MESSAGE = (
-    "Operation completed successfully."
-)
+EMPTY_PRODUCT_NAME_MESSAGE = """
+Please enter a product name after the command.
 
-CANCELLED_MESSAGE = (
-    "Operation cancelled."
-)
+Example:
 
-COMING_SOON_MESSAGE = (
-    "This feature is coming soon."
-)
+<code>/price Coffee Maker</code>
+"""
+
+PRODUCT_NAME_TOO_LONG_MESSAGE = """
+The product name is too long.
+
+Please use a shorter search query.
+"""
+
+# ==========================================================
+# Future Features
+# ==========================================================
+
+FEATURE_NOT_AVAILABLE_MESSAGE = """
+🚧 This feature is not available yet.
+
+It will be added in a future update.
+"""
