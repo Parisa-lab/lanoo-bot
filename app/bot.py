@@ -6,47 +6,59 @@ Create and run the Telegram bot.
 This module is responsible for:
 
 - Creating the Telegram Application
-- Configuring the bot
 - Registering all handlers
+- Registering the global error handler
 - Starting the polling loop
 """
 
-# Import Python's logging module.
-#
-# Every module should use logging instead of print().
+# ---------------------------------------------------------
+# Standard Library Imports
+# ---------------------------------------------------------
+
+# Import Python logging module.
 import logging
 
-# Import Telegram Application.
+# ---------------------------------------------------------
+# Third-Party Imports
+# ---------------------------------------------------------
+
+# Telegram Application.
 #
-# Application is the main entry point of the
-# python-telegram-bot framework.
+# This is the main object of python-telegram-bot.
 from telegram.ext import Application
+
+# ---------------------------------------------------------
+# Local Imports
+# ---------------------------------------------------------
 
 # Import application settings.
 #
 # The bot token is loaded from environment variables.
 from app.config import settings
 
-# Import the logging configuration.
+# Import logging configuration.
 from app.logger import setup_logging
 
-# Import the handler registration function.
-#
-# Every Telegram command is registered through this
-# function.
+# Import handler registration function.
 from app.handlers import register_handlers
 
+# Import global error handler.
+from app.error_handler import error_handler
 
-# Create a logger for this module.
+# ---------------------------------------------------------
+# Logger
+# ---------------------------------------------------------
+
+# Create a logger dedicated to this module.
 logger = logging.getLogger(__name__)
 
 
 class LanooBot:
     """
-    Main Telegram bot class.
+    Main Telegram bot.
 
-    This class creates the Telegram Application,
-    registers all handlers and starts polling.
+    This class is responsible for creating
+    and running the Telegram application.
     """
 
     def __init__(self) -> None:
@@ -54,62 +66,107 @@ class LanooBot:
         Initialize the Telegram bot.
         """
 
-        # Configure the logging system.
+        # Configure logging.
         #
-        # This should be executed only once during
-        # application startup.
+        # This function should only run once
+        # during application startup.
         setup_logging()
 
+        # Write a startup message.
         logger.info("Initializing Lanoo Bot...")
 
         # Create the Telegram Application.
         #
-        # The Application object receives updates from
-        # Telegram and dispatches them to handlers.
+        # The Application object receives updates
+        # from Telegram servers.
         self.application = (
             Application.builder()
             .token(settings.bot_token)
             .build()
         )
 
-        logger.info("Telegram Application created successfully.")
+        # Log successful initialization.
+        logger.info(
+            "Telegram Application created successfully."
+        )
 
     def register_handlers(self) -> None:
         """
         Register every Telegram handler.
-
-        Returns:
-            None.
         """
 
-        logger.info("Registering handlers...")
+        # Log current operation.
+        logger.info("Registering command handlers...")
 
+        # Register all command handlers.
         register_handlers(
             self.application,
         )
 
-        logger.info("Handlers registered successfully.")
+        # Register the global error handler.
+        #
+        # Every unhandled exception inside
+        # any command will arrive here.
+        self.application.add_error_handler(
+            error_handler,
+        )
+
+        # Log success.
+        logger.info(
+            "All handlers registered successfully."
+        )
 
     def run(self) -> None:
         """
         Start the Telegram bot.
 
+        This method starts polling Telegram servers
+        and keeps the application running until it
+        is stopped manually.
+
         Returns:
             None.
         """
 
-        logger.info("Starting bot...")
+        # Write a startup message.
+        logger.info("Starting Lanoo Bot...")
 
-        # Register all handlers before polling starts.
+        # Register every command handler.
+        #
+        # This method also registers the global
+        # error handler.
         self.register_handlers()
 
-        logger.info("Bot is now running.")
+        # Write a success message.
+        logger.info("Bot started successfully.")
 
-        # Start polling Telegram servers.
+        # Start receiving updates from Telegram.
         #
-        # drop_pending_updates=True prevents processing
-        # old messages that were sent while the bot
-        # was offline.
+        # drop_pending_updates=True tells Telegram
+        # to ignore old messages that arrived while
+        # the bot was offline.
         self.application.run_polling(
             drop_pending_updates=True,
         )
+
+        # This line is reached only after the bot
+        # has stopped running.
+        logger.info("Bot stopped.")
+
+    def stop(self) -> None:
+        """
+        Stop the Telegram bot.
+
+        Returns:
+            None.
+        """
+
+        # Write a shutdown message.
+        logger.info("Stopping bot...")
+
+        # Stop polling if the application exists.
+        if self.application is not None:
+            self.application.stop()
+
+        # Write a final log message.
+        logger.info("Bot stopped successfully.")
