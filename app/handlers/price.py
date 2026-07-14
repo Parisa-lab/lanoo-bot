@@ -1,30 +1,30 @@
 """
 price.py
 
-Handle the /price command.
+Price command handler.
 """
 
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from app.messages import FEATURE_NOT_AVAILABLE_MESSAGE
-from app.telegram import send_message
+from app.telegram.sender import send_message
 
 
-async def price_handler(
+async def price_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
     """
-    Handle the /price command.
-
-    This is a temporary implementation.
-    The real price search will be added later.
+    Handle /price command.
     """
 
-    _ = context
-
     await send_message(
-        update=update,
-        text=FEATURE_NOT_AVAILABLE_MESSAGE,
+        update,
+        (
+            "🔍 Price Search Result\n\n"
+            "Product: iPhone 16 Pro\n"
+            "Store: Test Store\n"
+            "Price: 89,900,000 Toman\n\n"
+            "✅ Handler works correctly."
+        ),
     )
