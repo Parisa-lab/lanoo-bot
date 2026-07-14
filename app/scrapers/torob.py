@@ -54,6 +54,14 @@ class TorobScraper:
         )
 
         # --------------------------------------------------
+        # Debug output.
+        # --------------------------------------------------
+
+        print(
+            f"TOROB QUERY => {query}"
+        )
+
+        # --------------------------------------------------
         # Temporary fake result.
         # --------------------------------------------------
 
@@ -66,7 +74,7 @@ class TorobScraper:
         )
 
         logger.info(
-            "Torob search completed."
+            "Torob search completed successfully."
         )
 
         return product
