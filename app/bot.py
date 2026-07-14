@@ -15,41 +15,28 @@ This module is responsible for:
 # Standard Library Imports
 # ---------------------------------------------------------
 
-# Import Python logging module.
 import logging
 
 # ---------------------------------------------------------
 # Third-Party Imports
 # ---------------------------------------------------------
 
-# Telegram Application.
-#
-# This is the main object of python-telegram-bot.
+from telegram import Update
 from telegram.ext import Application
 
 # ---------------------------------------------------------
 # Local Imports
 # ---------------------------------------------------------
 
-# Import application settings.
-#
-# The bot token is loaded from environment variables.
 from app.config import settings
-
-# Import logging configuration.
 from app.logger import setup_logging
-
-# Import handler registration function.
 from app.handlers import register_handlers
-
-# Import global error handler.
 from app.error_handler import error_handler
 
 # ---------------------------------------------------------
 # Logger
 # ---------------------------------------------------------
 
-# Create a logger dedicated to this module.
 logger = logging.getLogger(__name__)
 
 
@@ -67,51 +54,45 @@ class LanooBot:
         """
 
         # Configure logging.
-        #
-        # This function should only run once
-        # during application startup.
         setup_logging()
 
-        # Write a startup message.
-        logger.info("Initializing Lanoo Bot...")
+        # Startup log.
+        logger.info(
+            "Initializing Lanoo Bot..."
+        )
 
-        # Create the Telegram Application.
-        #
-        # The Application object receives updates
-        # from Telegram servers.
+        # Create Telegram application.
         self.application = (
             Application.builder()
             .token(settings.bot_token)
             .build()
         )
 
-        # Log successful initialization.
+        # Register global error handler.
+        #
+        # Every unhandled exception in any handler
+        # will be sent to error_handler().
+        self.application.add_error_handler(
+            error_handler,
+        )
+
         logger.info(
             "Telegram Application created successfully."
         )
 
     def register_handlers(self) -> None:
         """
-        Register every Telegram handler.
+        Register all Telegram handlers.
         """
 
-        # Log current operation.
-        logger.info("Registering command handlers...")
+        logger.info(
+            "Registering command handlers..."
+        )
 
-        # Register all command handlers.
         register_handlers(
             self.application,
         )
 
-        # Register the global error handler.
-        #
-        # Every unhandled exception inside
-        # any command will arrive here.
-        self.application.add_error_handler(
-            error_handler,
-        )
-
-        # Log success.
         logger.info(
             "All handlers registered successfully."
         )
@@ -120,38 +101,37 @@ class LanooBot:
         """
         Start the Telegram bot.
 
-        This method starts polling Telegram servers
-        and keeps the application running until it
-        is stopped manually.
-
         Returns:
             None.
         """
 
-        # Write a startup message.
-        logger.info("Starting Lanoo Bot...")
-
-        # Register every command handler.
-        #
-        # This method also registers the global
-        # error handler.
-        self.register_handlers()
-
-        # Write a success message.
-        logger.info("Bot started successfully.")
-
-        # Start receiving updates from Telegram.
-        #
-        # drop_pending_updates=True tells Telegram
-        # to ignore old messages that arrived while
-        # the bot was offline.
-        self.application.run_polling(
-            drop_pending_updates=True,
+        logger.info(
+            "Starting Lanoo Bot..."
         )
 
-        # This line is reached only after the bot
-        # has stopped running.
-        logger.info("Bot stopped.")
+        # Register handlers.
+        self.register_handlers()
+
+        logger.info(
+            "Bot started successfully."
+        )
+
+        # Start polling.
+        #
+        # drop_pending_updates=True:
+        # Ignore messages received while the bot
+        # was offline.
+        #
+        # allowed_updates=Update.ALL_TYPES:
+        # Receive all Telegram update types.
+        self.application.run_polling(
+            drop_pending_updates=True,
+            allowed_updates=Update.ALL_TYPES,
+        )
+
+        logger.info(
+            "Bot stopped."
+        )
 
     def stop(self) -> None:
         """
@@ -161,12 +141,13 @@ class LanooBot:
             None.
         """
 
-        # Write a shutdown message.
-        logger.info("Stopping bot...")
+        logger.info(
+            "Stopping bot..."
+        )
 
-        # Stop polling if the application exists.
         if self.application is not None:
             self.application.stop()
 
-        # Write a final log message.
-        logger.info("Bot stopped successfully.")
+        logger.info(
+            "Bot stopped successfully."
+        )
