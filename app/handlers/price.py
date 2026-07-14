@@ -1,13 +1,16 @@
 """
 price.py
 
-Price command handler.
+Price search command.
 """
 
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from app.telegram.sender import send_message
+from app.telegram.sender import (
+    send_message,
+    send_warning_message,
+)
 
 
 async def price_command(
@@ -18,13 +21,27 @@ async def price_command(
     Handle /price command.
     """
 
+    # User entered no search term.
+    if not context.args:
+
+        await send_warning_message(
+            update,
+            "Usage:\n/price product name",
+        )
+
+        return
+
+    # Build search query.
+    query = " ".join(
+        context.args,
+    )
+
+    # Temporary output.
     await send_message(
         update,
         (
-            "🔍 Price Search Result\n\n"
-            "Product: iPhone 16 Pro\n"
-            "Store: Test Store\n"
-            "Price: 89,900,000 Toman\n\n"
-            "✅ Handler works correctly."
+            "🔍 Search Request Received\n\n"
+            f"Query: {query}\n\n"
+            "Next step: PriceService"
         ),
     )
