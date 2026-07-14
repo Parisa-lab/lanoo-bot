@@ -1,14 +1,21 @@
 """
 telegram package
 
-This package contains Telegram-specific functionality.
-
-Modules in this package communicate directly with
-the Telegram Bot API.
+Telegram utilities.
 """
 
-from .sender import send_message
+from app.telegram.sender import (
+    send_message,
+    send_warning_message,
+    send_error_message,
+    send_success_message,
+    send_info_message,
+)
 
 __all__ = [
     "send_message",
+    "send_warning_message",
+    "send_error_message",
+    "send_success_message",
+    "send_info_message",
 ]
