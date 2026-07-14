@@ -28,6 +28,8 @@ import logging
 from telegram import Message
 from telegram import Update
 from telegram.constants import ParseMode
+from telegram.constants import ChatAction
+
 
 # ==========================================================
 # Local Imports
@@ -185,9 +187,8 @@ async def send_typing_action(
         "typing",
     )
 
-    # Send typing action.
     await chat.send_action(
-        "typing",
+       ChatAction.TYPING,
     )
 
 
