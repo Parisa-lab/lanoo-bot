@@ -2,10 +2,6 @@
 error_handler.py
 
 Global Telegram error handler.
-
-This module catches every unhandled exception raised
-inside the Telegram application and writes detailed
-information into the application logs.
 """
 
 # ==========================================================
@@ -22,6 +18,7 @@ import traceback
 # ==========================================================
 
 from telegram import Update
+from telegram.error import Conflict
 from telegram.ext import ContextTypes
 
 # ==========================================================
@@ -36,25 +33,27 @@ async def error_handler(
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
     """
-    Handle every unhandled exception.
+    Global application error handler.
 
-    This function is automatically called by
-    python-telegram-bot whenever an exception
-    reaches the application level.
-
-    Args:
-        update:
-            Telegram update that caused the error.
-
-        context:
-            Telegram callback context.
-
-    Returns:
-        None.
+    This function catches every unhandled exception
+    raised by python-telegram-bot.
     """
 
     # ------------------------------------------------------
-    # Log the exception itself.
+    # Handle Telegram polling conflicts separately.
+    # ------------------------------------------------------
+
+    if isinstance(
+        context.error,
+        Conflict,
+    ):
+        logger.warning(
+            "Another bot instance is already running."
+        )
+        return
+
+    # ------------------------------------------------------
+    # Log exception.
     # ------------------------------------------------------
 
     logger.exception(
@@ -63,7 +62,7 @@ async def error_handler(
     )
 
     # ------------------------------------------------------
-    # Build a complete Python traceback.
+    # Build traceback.
     # ------------------------------------------------------
 
     traceback_text = "".join(
@@ -75,23 +74,33 @@ async def error_handler(
     )
 
     # ------------------------------------------------------
-    # Prepare Telegram update information.
+    # Extract update information.
     # ------------------------------------------------------
 
     update_information = "No update available."
 
-    if isinstance(update, Update):
+    if isinstance(
+        update,
+        Update,
+    ):
+        try:
 
-        update_information = html.escape(
-            json.dumps(
-                update.to_dict(),
-                indent=4,
-                ensure_ascii=False,
+            update_information = html.escape(
+                json.dumps(
+                    update.to_dict(),
+                    indent=4,
+                    ensure_ascii=False,
+                )
             )
-        )
+
+        except Exception:
+
+            update_information = (
+                "Failed to serialize update."
+            )
 
     # ------------------------------------------------------
-    # Extract useful information from the update.
+    # Extract user information.
     # ------------------------------------------------------
 
     user_id = "Unknown"
@@ -99,32 +108,39 @@ async def error_handler(
     chat_id = "Unknown"
     message_text = "Unknown"
 
-    if isinstance(update, Update):
+    if isinstance(
+        update,
+        Update,
+    ):
 
-        # Extract user information.
         if update.effective_user is not None:
 
-            user_id = update.effective_user.id
+            user_id = (
+                update.effective_user.id
+            )
+
             username = (
                 update.effective_user.username
                 or update.effective_user.full_name
             )
 
-        # Extract chat information.
         if update.effective_chat is not None:
 
-            chat_id = update.effective_chat.id
+            chat_id = (
+                update.effective_chat.id
+            )
 
-        # Extract received message.
         if (
-            update.effective_message is not None
+            update.effective_message
             and update.effective_message.text
         ):
 
-            message_text = update.effective_message.text
+            message_text = (
+                update.effective_message.text
+            )
 
     # ------------------------------------------------------
-    # Write a detailed error report.
+    # Build error report.
     # ------------------------------------------------------
 
     logger.error(
@@ -141,8 +157,8 @@ async def error_handler(
         "%s\n\n"
         "Python Traceback\n"
         "-----------------------------------------------------\n"
-        "%s"
-        "\n=====================================================",
+        "%s\n"
+        "=====================================================",
         user_id,
         username,
         chat_id,
@@ -150,14 +166,3 @@ async def error_handler(
         update_information,
         traceback_text,
     )
-
-    # ------------------------------------------------------
-    # Future Improvements
-    # ------------------------------------------------------
-    #
-    # Future versions may also:
-    #
-    # • Send the error report to the bot administrator.
-    # • Store errors inside a database.
-    # • Send notifications to Telegram or Discord.
-    # • Report errors to services such as Sentry.
