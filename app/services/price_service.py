@@ -1,7 +1,7 @@
 """
 price_service.py
 
-Business logic for product price searches.
+Business logic for product searches.
 """
 
 # ==========================================================
@@ -15,6 +15,7 @@ import logging
 # ==========================================================
 
 from app.models import Product
+from app.scrapers import TorobScraper
 
 # ==========================================================
 # Logger
@@ -26,61 +27,41 @@ logger = logging.getLogger(__name__)
 class PriceService:
     """
     Product price search service.
-
-    This class contains the business logic for
-    product searches.
-
-    Scrapers should not be called directly from
-    Telegram handlers. Handlers should call this
-    service instead.
     """
+
+    def __init__(self) -> None:
+        """
+        Initialize service.
+        """
+
+        self.torob = TorobScraper()
 
     async def search(
         self,
         query: str,
     ) -> Product:
         """
-        Search for a product.
-
-        Currently returns mock data.
-
-        Future versions will:
-        - Search Torob
-        - Search Digikala
-        - Search Emalls
-        - Compare prices
-        - Return the best result
+        Search product.
 
         Args:
             query:
                 Product search query.
 
         Returns:
-            Product object.
+            Product.
         """
 
-        # Log search request.
         logger.info(
-            "Searching product: %s",
+            "Price search started: %s",
             query,
         )
 
-        # --------------------------------------------------
-        # Temporary fake product.
-        # --------------------------------------------------
-
-        product = Product(
-            title=query,
-            store="Test Store",
-            price=89_900_000,
-            url="https://example.com",
-            image_url="",
+        product = await self.torob.search(
+            query,
         )
 
-        # Log successful result.
         logger.info(
-            "Search completed: %s",
-            product.title,
+            "Price search completed."
         )
 
         return product
