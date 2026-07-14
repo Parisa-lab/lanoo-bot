@@ -1,56 +1,51 @@
 """
 product.py
 
-Define the Product model.
-
-Every scraper must return Product objects.
-
-Never use dictionaries to represent products.
+Product data model.
 """
 
-from typing import Optional
+# ==========================================================
+# Third-Party Imports
+# ==========================================================
 
+from pydantic import BaseModel
 from pydantic import Field
-from pydantic import HttpUrl
-
-from app.models.base import BaseSchema
 
 
-class Product(BaseSchema):
+class Product(BaseModel):
     """
-    Represent a product.
+    Product model.
+
+    Represents a product found by a scraper.
     """
 
-    # Product name.
-    name: str = Field(
-        min_length=1,
-        max_length=200,
-    )
-
-    # Product price.
-    #
-    # Always stored as an integer.
-    price: int = Field(
-        ge=0,
-    )
-
-    # Currency code.
-    currency: str = Field(
-        min_length=3,
-        max_length=10,
+    # Product title.
+    title: str = Field(
+        ...,
+        description="Product title",
     )
 
     # Store name.
     store: str = Field(
-        min_length=1,
-        max_length=100,
+        ...,
+        description="Store name",
     )
 
-    # Product page.
-    url: HttpUrl
+    # Product price.
+    price: int = Field(
+        ...,
+        ge=0,
+        description="Price in toman",
+    )
 
-    # Optional image.
-    image_url: Optional[HttpUrl] = None
+    # Product URL.
+    url: str = Field(
+        default="",
+        description="Product URL",
+    )
 
-    # Product availability.
-    available: bool = True
+    # Product image URL.
+    image_url: str = Field(
+        default="",
+        description="Product image",
+    )
