@@ -1,88 +1,40 @@
 """
 message_formatter.py
 
-Build dynamic messages shown to users.
-
-Unlike messages.py, which stores static text,
-this module generates messages containing dynamic
-data such as product names, prices, stores, and links.
+Convert application models into Telegram messages.
 """
 
-# Import message templates.
-#
-# All message templates are defined inside
-# messages.py.
-from app.messages import (
-    PRODUCTS_FOUND_MESSAGE,
-    PRODUCT_TEMPLATE,
-    PRODUCT_LINK_TEMPLATE,
-)
+# ==========================================================
+# Local Imports
+# ==========================================================
+
+from app.models import Product
 
 
-def build_products_found_message(
-    count: int,
-) -> str:
+class MessageFormatter:
     """
-    Build the message that tells the user how many
-    products were found.
-
-    Args:
-        count:
-            Number of matching products.
-
-    Returns:
-        A formatted message.
+    Format application models into Telegram messages.
     """
 
-    return PRODUCTS_FOUND_MESSAGE.format(
-        count=count,
-    )
+    @staticmethod
+    def format_product(
+        product: Product,
+    ) -> str:
+        """
+        Convert a Product into a Telegram message.
 
+        Args:
+            product:
+                Product object.
 
-def build_product_message(
-    *,
-    name: str,
-    price: str,
-    store: str,
-) -> str:
-    """
-    Build a formatted product message.
+        Returns:
+            Formatted Telegram message.
+        """
 
-    Args:
-        name:
-            Product name.
-
-        price:
-            Product price.
-
-        store:
-            Store name.
-
-    Returns:
-        A formatted product message.
-    """
-
-    return PRODUCT_TEMPLATE.format(
-        name=name,
-        price=price,
-        store=store,
-    )
-
-
-def build_product_link_message(
-    url: str,
-) -> str:
-    """
-    Build a formatted product link.
-
-    Args:
-        url:
-            Product URL.
-
-    Returns:
-        A formatted link message.
-    """
-
-    return PRODUCT_LINK_TEMPLATE.format(
-        url=url,
-    )
+        return (
+            "🔍 Product Found\n\n"
+            f"📦 Product: {product.title}\n"
+            f"🏪 Store: {product.store}\n"
+            f"💰 Price: {product.price:,} Toman\n"
+            f"🔗 URL: {product.url}"
+        )
