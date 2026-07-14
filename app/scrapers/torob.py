@@ -55,3 +55,7 @@ async def get_price(url: str):
         "seller": seller,
         "image": image
     }
+
+if __name__ == "__main__":
+    url = "https://torob.com/p/f498b27b-596c-47c8-a48d-0beed264b2d8/"
+    print(get_product_info(url))
