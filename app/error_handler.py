@@ -34,13 +34,10 @@ async def error_handler(
 ) -> None:
     """
     Global application error handler.
-
-    This function catches every unhandled exception
-    raised by python-telegram-bot.
     """
 
     # ------------------------------------------------------
-    # Handle Telegram polling conflicts separately.
+    # Handle polling conflicts separately.
     # ------------------------------------------------------
 
     if isinstance(
@@ -74,7 +71,7 @@ async def error_handler(
     )
 
     # ------------------------------------------------------
-    # Extract update information.
+    # Serialize update.
     # ------------------------------------------------------
 
     update_information = "No update available."
@@ -113,7 +110,7 @@ async def error_handler(
         Update,
     ):
 
-        if update.effective_user is not None:
+        if update.effective_user:
 
             user_id = (
                 update.effective_user.id
@@ -124,7 +121,7 @@ async def error_handler(
                 or update.effective_user.full_name
             )
 
-        if update.effective_chat is not None:
+        if update.effective_chat:
 
             chat_id = (
                 update.effective_chat.id
@@ -140,7 +137,7 @@ async def error_handler(
             )
 
     # ------------------------------------------------------
-    # Build error report.
+    # Write detailed report.
     # ------------------------------------------------------
 
     logger.error(
