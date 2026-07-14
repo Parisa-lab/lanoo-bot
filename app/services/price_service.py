@@ -11,6 +11,12 @@ Business logic for product price searches.
 import logging
 
 # ==========================================================
+# Local Imports
+# ==========================================================
+
+from app.models import Product
+
+# ==========================================================
 # Logger
 # ==========================================================
 
@@ -20,32 +26,61 @@ logger = logging.getLogger(__name__)
 class PriceService:
     """
     Product price search service.
+
+    This class contains the business logic for
+    product searches.
+
+    Scrapers should not be called directly from
+    Telegram handlers. Handlers should call this
+    service instead.
     """
 
     async def search(
         self,
         query: str,
-    ) -> str:
+    ) -> Product:
         """
-        Search product prices.
+        Search for a product.
+
+        Currently returns mock data.
+
+        Future versions will:
+        - Search Torob
+        - Search Digikala
+        - Search Emalls
+        - Compare prices
+        - Return the best result
 
         Args:
             query:
                 Product search query.
 
         Returns:
-            Formatted result text.
+            Product object.
         """
 
+        # Log search request.
         logger.info(
-            "Searching prices for: %s",
+            "Searching product: %s",
             query,
         )
 
-        # Temporary fake data.
-        return (
-            "🔍 Search Result\n\n"
-            f"Product: {query}\n"
-            "Store: Test Store\n"
-            "Price: 89,900,000 Toman"
+        # --------------------------------------------------
+        # Temporary fake product.
+        # --------------------------------------------------
+
+        product = Product(
+            title=query,
+            store="Test Store",
+            price=89_900_000,
+            url="https://example.com",
+            image_url="",
         )
+
+        # Log successful result.
+        logger.info(
+            "Search completed: %s",
+            product.title,
+        )
+
+        return product
