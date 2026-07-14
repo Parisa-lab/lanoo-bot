@@ -1,16 +1,18 @@
 """
 sender.py
 
-Telegram messaging utilities.
+Telegram text messaging utilities.
 
-Every outgoing message should pass through this module.
+Every outgoing text message should pass through this
+module.
 
 Benefits:
 
 - Centralized message sending
-- Consistent parse mode
-- Automatic logging
-- Easier future maintenance
+- Consistent formatting
+- Consistent logging
+- Easier maintenance
+- Easier future enhancements
 """
 
 # ==========================================================
@@ -28,11 +30,25 @@ from telegram import Update
 from telegram.constants import ParseMode
 
 # ==========================================================
+# Local Imports
+# ==========================================================
+
+from app.telegram.base import (
+    get_chat,
+    get_message,
+    log_invalid_update,
+    log_outgoing_message,
+)
+
+# ==========================================================
 # Logger
 # ==========================================================
 
 logger = logging.getLogger(__name__)
 
+# ==========================================================
+# Text Messages
+# ==========================================================
 
 async def send_message(
     update: Update,
@@ -42,7 +58,7 @@ async def send_message(
     disable_web_page_preview: bool = True,
 ) -> Message | None:
     """
-    Send a message to the current chat.
+    Send a text message.
 
     Args:
         update:
@@ -55,44 +71,40 @@ async def send_message(
             Telegram parse mode.
 
         disable_web_page_preview:
-            Disable link preview.
+            Disable link previews.
 
     Returns:
-        Sent Message object or None.
+        Message or None.
     """
 
-    # ------------------------------------------------------
+    # Get Telegram message.
+    message = get_message(update)
+
     # Validate update.
-    # ------------------------------------------------------
+    if message is None:
 
-    if update.effective_message is None:
-
-        logger.warning(
-            "Cannot send message because effective_message is None."
+        log_invalid_update(
+            "send_message",
         )
 
         return None
 
-    # ------------------------------------------------------
-    # Write debug log.
-    # ------------------------------------------------------
+    # Get chat information.
+    chat = get_chat(update)
 
-    logger.debug(
-        "Sending message to chat %s",
-        update.effective_chat.id
-        if update.effective_chat
-        else "Unknown",
+    # Write debug log.
+    log_outgoing_message(
+        chat.id if chat else "Unknown",
+        "send_message",
     )
 
-    # ------------------------------------------------------
-    # Send the message.
-    # ------------------------------------------------------
-
-    return await update.effective_message.reply_text(
+    # Send message.
+    return await message.reply_text(
         text=text,
         parse_mode=parse_mode,
         disable_web_page_preview=disable_web_page_preview,
     )
+
 
 # ==========================================================
 # Message Editing
@@ -106,32 +118,30 @@ async def edit_message(
     disable_web_page_preview: bool = True,
 ) -> Message:
     """
-    Edit an existing Telegram message.
+    Edit an existing message.
 
     Args:
         message:
-            Message to edit.
+            Telegram message.
 
         text:
-            New message text.
+            New text.
 
         parse_mode:
             Telegram parse mode.
 
         disable_web_page_preview:
-            Disable link preview.
+            Disable link previews.
 
     Returns:
         Edited Telegram message.
     """
 
-    # Write a debug log.
     logger.debug(
         "Editing message %s",
         message.message_id,
     )
 
-    # Edit the message.
     return await message.edit_text(
         text=text,
         parse_mode=parse_mode,
@@ -140,14 +150,14 @@ async def edit_message(
 
 
 # ==========================================================
-# Chat Actions
+# Typing Action
 # ==========================================================
 
 async def send_typing_action(
     update: Update,
 ) -> None:
     """
-    Send the typing action to the current chat.
+    Send typing action.
 
     Args:
         update:
@@ -157,15 +167,26 @@ async def send_typing_action(
         None.
     """
 
-    # Validate chat.
-    if update.effective_chat is None:
+    # Get chat.
+    chat = get_chat(update)
+
+    # Validate update.
+    if chat is None:
+
+        log_invalid_update(
+            "send_typing_action",
+        )
+
         return
 
-    logger.debug(
-        "Sending typing action."
+    # Write debug log.
+    log_outgoing_message(
+        chat.id,
+        "typing",
     )
 
-    await update.effective_chat.send_action(
+    # Send typing action.
+    await chat.send_action(
         "typing",
     )
 
@@ -197,31 +218,103 @@ async def delete_message(
 
 
 # ==========================================================
-# Error Messages
+# Standard Messages
 # ==========================================================
 
 async def send_error_message(
     update: Update,
+    text: str | None = None,
 ) -> Message | None:
     """
-    Send a generic error message.
+    Send an error message.
 
     Args:
         update:
             Telegram update.
 
-    Returns:
-        Sent message or None.
-    """
+        text:
+            Optional custom error text.
 
-    logger.warning(
-        "Sending generic error message."
-    )
+    Returns:
+        Message or None.
+    """
 
     return await send_message(
         update=update,
-        text=(
-            "⚠️ An unexpected error occurred.\n\n"
+        text=text or (
+            "❌ An unexpected error occurred.\n"
             "Please try again later."
         ),
+    )
+
+
+async def send_success_message(
+    update: Update,
+    text: str,
+) -> Message | None:
+    """
+    Send a success message.
+
+    Args:
+        update:
+            Telegram update.
+
+        text:
+            Success message.
+
+    Returns:
+        Message or None.
+    """
+
+    return await send_message(
+        update=update,
+        text=f"✅ {text}",
+    )
+
+
+async def send_warning_message(
+    update: Update,
+    text: str,
+) -> Message | None:
+    """
+    Send a warning message.
+
+    Args:
+        update:
+            Telegram update.
+
+        text:
+            Warning message.
+
+    Returns:
+        Message or None.
+    """
+
+    return await send_message(
+        update=update,
+        text=f"⚠️ {text}",
+    )
+
+
+async def send_info_message(
+    update: Update,
+    text: str,
+) -> Message | None:
+    """
+    Send an informational message.
+
+    Args:
+        update:
+            Telegram update.
+
+        text:
+            Information text.
+
+    Returns:
+        Message or None.
+    """
+
+    return await send_message(
+        update=update,
+        text=f"ℹ️ {text}",
     )
