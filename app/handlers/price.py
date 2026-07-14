@@ -15,6 +15,8 @@ from telegram.ext import ContextTypes
 # Local Imports
 # ==========================================================
 
+from app.message_formatter import MessageFormatter
+
 from app.services import PriceService
 
 from app.telegram.sender import (
@@ -75,21 +77,29 @@ async def price_command(
     )
 
     # ------------------------------------------------------
-    # Create service instance.
+    # Create service.
     # ------------------------------------------------------
 
     service = PriceService()
 
     # ------------------------------------------------------
-    # Execute search.
+    # Search product.
     # ------------------------------------------------------
 
-    result = await service.search(
+    product = await service.search(
         query,
     )
 
     # ------------------------------------------------------
-    # Send result to the user.
+    # Format result.
+    # ------------------------------------------------------
+
+    result = MessageFormatter.format_product(
+        product,
+    )
+
+    # ------------------------------------------------------
+    # Send result.
     # ------------------------------------------------------
 
     await send_message(
