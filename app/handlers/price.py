@@ -1,47 +1,98 @@
 """
 price.py
 
-Price search command.
+Price search command handler.
 """
+
+# ==========================================================
+# Third-Party Imports
+# ==========================================================
 
 from telegram import Update
 from telegram.ext import ContextTypes
+
+# ==========================================================
+# Local Imports
+# ==========================================================
+
+from app.services import PriceService
 
 from app.telegram.sender import (
     send_message,
     send_warning_message,
 )
 
+# ==========================================================
+# Command Handler
+# ==========================================================
 
 async def price_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
     """
-    Handle /price command.
+    Handle the /price command.
+
+    Examples:
+
+        /price iphone 16
+
+        /price samsung s25 ultra
+
+    Args:
+        update:
+            Telegram update.
+
+        context:
+            Telegram callback context.
+
+    Returns:
+        None.
     """
 
-    # User entered no search term.
+    # ------------------------------------------------------
+    # Validate user input.
+    # ------------------------------------------------------
+
     if not context.args:
 
         await send_warning_message(
             update,
-            "Usage:\n/price product name",
+            (
+                "Usage:\n"
+                "/price product name"
+            ),
         )
 
         return
 
+    # ------------------------------------------------------
     # Build search query.
+    # ------------------------------------------------------
+
     query = " ".join(
         context.args,
     )
 
-    # Temporary output.
+    # ------------------------------------------------------
+    # Create service instance.
+    # ------------------------------------------------------
+
+    service = PriceService()
+
+    # ------------------------------------------------------
+    # Execute search.
+    # ------------------------------------------------------
+
+    result = await service.search(
+        query,
+    )
+
+    # ------------------------------------------------------
+    # Send result to the user.
+    # ------------------------------------------------------
+
     await send_message(
         update,
-        (
-            "🔍 Search Request Received\n\n"
-            f"Query: {query}\n\n"
-            "Next step: PriceService"
-        ),
+        result,
     )
