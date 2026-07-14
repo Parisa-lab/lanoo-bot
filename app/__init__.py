@@ -1,3 +1,3 @@
 """
-Lanoo bot application package.
+Lanoo Bot Application Package.
 """
