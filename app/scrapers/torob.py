@@ -1,80 +1,57 @@
-"""
-torob.py
-
-Torob scraper.
-
-Currently returns mock data.
-
-Later this scraper will fetch real product data
-from Torob search results.
-"""
-
-# ==========================================================
-# Standard Library Imports
-# ==========================================================
-
-import logging
-
-# ==========================================================
-# Local Imports
-# ==========================================================
-
-from app.models import Product
-
-# ==========================================================
-# Logger
-# ==========================================================
-
-logger = logging.getLogger(__name__)
+import re
+import httpx
+from bs4 import BeautifulSoup
 
 
-class TorobScraper:
-    """
-    Torob scraper.
-    """
+async def get_price(url: str):
 
-    async def search(
-        self,
-        query: str,
-    ) -> Product:
-        """
-        Search Torob.
-
-        Args:
-            query:
-                Product name.
-
-        Returns:
-            Product.
-        """
-
-        logger.info(
-            "Torob search started: %s",
-            query,
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Linux; Android 14)"
+            " AppleWebKit/537.36"
+            " Chrome/124.0.0.0 Mobile Safari/537.36"
         )
+    }
 
-        # --------------------------------------------------
-        # Debug output.
-        # --------------------------------------------------
+    async with httpx.AsyncClient(
+        headers=headers,
+        follow_redirects=True,
+        timeout=30
+    ) as client:
 
-        print(
-            f"TOROB QUERY => {query}"
-        )
+        response = await client.get(url)
 
-        # --------------------------------------------------
-        # Temporary fake result.
-        # --------------------------------------------------
+    soup = BeautifulSoup(response.text, "html.parser")
 
-        product = Product(
-            title=query,
-            store="Torob Test Store",
-            price=87_500_000,
-            url="https://torob.com",
-            image_url="",
-        )
+    # نام محصول
+    title = ""
 
-        logger.info(
-            "Torob search completed successfully."
-        )
+    title_tag = soup.select_one("h1.Showcase_name1__kioZg")
 
-        return product
+    if title_tag:
+        title = title_tag.get_text(strip=True)
+
+    # فروشنده و قیمت
+    seller = ""
+    price = ""
+
+    boxes = soup.select("div.actions_buy_box_text__Ng2e8")
+
+    if len(boxes) >= 2:
+        seller = boxes[0].get_text(strip=True)
+        price = boxes[1].get_text(strip=True)
+
+    # عکس
+    image = ""
+
+    img = soup.select_one("div.Showcase_showcase__I1Z3f img")
+
+    if img:
+        image = img.get("src", "")
+
+    return {
+        "title": title,
+        "price": price,
+        "seller": seller,
+        "image": image
+    }
