@@ -11,6 +11,14 @@ from app.handlers.start import start
 from app.handlers.price import price_command
 
 
+
+
+print("HANDLERS INIT LOADED")
+
+
+
+
+
 def register_handlers(
     application: Application,
 ) -> None:
