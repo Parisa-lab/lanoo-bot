@@ -1,73 +1,30 @@
-"""
-start.py
-
-Handle the /start command.
-
-This module contains the handler responsible for
-welcoming users when they start the bot.
-"""
-
-# Import Telegram update object.
-#
-# Update contains all information received from Telegram,
-# including messages, commands and callback queries.
 from telegram import Update
-
-# Import Telegram context types.
-#
-# ContextTypes provides type hints for the callback context.
 from telegram.ext import ContextTypes
 
-# Import the welcome message.
-#
-# All user-facing messages are stored inside messages.py.
-from app.messages import WELCOME_MESSAGE
+from app.scrapers.torob import get_price
 
 
-async def start_handler(
+async def start(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
-    """
-    Handle the /start command.
 
-    This function is executed whenever a user sends
-    the /start command.
-
-    It sends a welcome message to the user.
-
-    Args:
-        update:
-            Incoming Telegram update.
-
-        context:
-            Telegram callback context.
-
-    Returns:
-        None.
-    """
-
-    # The context parameter is not used yet.
-    #
-    # It will be used later for features such as:
-    # - User data
-    # - Conversation states
-    # - Background jobs
-    # - Bot data
-    #
-    # Assigning it to "_" tells linters that this
-    # is intentional.
-    _ = context
-
-    # Make sure the update contains a message.
-    #
-    # Although Telegram usually sends a message for
-    # commands, checking for None prevents unexpected
-    # runtime errors.
-    if update.message is None:
-        return
-
-    # Send the welcome message to the user.
     await update.message.reply_text(
-        text=WELCOME_MESSAGE,
+        "شروع تست توروب..."
     )
+
+    url = (
+        "https://torob.com/p/"
+        "f498b27b-596c-47c8-a48d-0beed264b2d8/"
+    )
+
+    data = await get_price(url)
+
+    text = (
+        f"📦 {data['title']}\n\n"
+        f"💰 {data['price']}\n"
+        f"🏪 {data['seller']}\n\n"
+        f"🖼 {data['image']}"
+    )
+
+    await update.message.reply_text(text)
