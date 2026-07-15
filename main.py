@@ -8,7 +8,7 @@ This module is responsible for starting the Telegram bot.
 
 Execution starts here when the application is launched.
 """
-
+"""
 # Import Python's logging module.
 #
 # Used to report unexpected startup errors.
