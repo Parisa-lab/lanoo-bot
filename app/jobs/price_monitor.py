@@ -1,7 +1,5 @@
 """
-Automatic price monitoring.
-
-Runs every hour.
+price_monitor.py
 """
 
 import logging
@@ -12,60 +10,38 @@ from app.scrapers.torob import get_price
 
 logger = logging.getLogger(__name__)
 
-# Replace with your own values
+PRODUCT_URL = (
+    "https://torob.com/p/f498b27b-596c-47c8-a48d-0beed264b2d8/"
+)
+
 CHAT_ID = 625896200
 
-PRODUCTS = [
-    "https://torob.com/p/f498b27b-596c-47c8-a48d-0beed264b2d8/",
-]
 
-LAST_PRICES = {}
-
-
-async def check_prices(
+async def monitor_price(
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
 
-    for url in PRODUCTS:
+    try:
 
-        try:
+        data = await get_price(
+            PRODUCT_URL
+        )
 
-            data = await get_price(url)
+        message = (
+            f"Product: {data['title']}\n\n"
+            f"Seller: {data['seller']}\n\n"
+            f"Price: {data['price']}"
+        )
 
-            title = data["title"]
-            price = data["price"]
+        await context.bot.send_message(
+            chat_id=CHAT_ID,
+            text=message,
+        )
 
-            old_price = LAST_PRICES.get(url)
+        logger.info(
+            "Hourly check sent."
+        )
 
-            if old_price is None:
+    except Exception as error:
 
-                LAST_PRICES[url] = price
-
-                await context.bot.send_message(
-                    chat_id=CHAT_ID,
-                    text=(
-                        "Product Added\n\n"
-                        f"{title}\n\n"
-                        f"Current Price: {price}"
-                    ),
-                )
-
-                continue
-
-            if old_price != price:
-
-                await context.bot.send_message(
-                    chat_id=CHAT_ID,
-                    text=(
-                        "Price Changed\n\n"
-                        f"{title}\n\n"
-                        f"Old Price: {old_price}\n"
-                        f"New Price: {price}"
-                    ),
-                )
-
-                LAST_PRICES[url] = price
-
-        except Exception as error:
-
-            logger.exception(error)
+        logger.exception(error)
