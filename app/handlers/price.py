@@ -20,6 +20,7 @@ from telegram.ext import ContextTypes
 
 from app.scrapers.torob import get_price
 
+print("NEW PRICE HANDLER LOADED")
 
 async def price_command(
     update: Update,
