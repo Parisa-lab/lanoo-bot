@@ -1,108 +1,33 @@
-"""
-price.py
-
-Price search command handler.
-"""
-
-# ==========================================================
-# Third-Party Imports
-# ==========================================================
-
 from telegram import Update
-from telegram.ext import ContextTypes
+from telegram.ext import ContextTypes, CommandHandler
 
-# ==========================================================
-# Local Imports
-# ==========================================================
+from app.scrapers.torob import get_price
 
-from app.message_formatter import MessageFormatter
-
-from app.services import PriceService
-
-from app.telegram.sender import (
-    send_message,
-    send_warning_message,
-)
-
-# ==========================================================
-# Command Handler
-# ==========================================================
 
 async def price_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-) -> None:
-    """
-    Handle the /price command.
+):
+    url = (
+        "https://torob.com/p/f498b27b-596c-47c8-a48d-0beed264b2d8/"
+    )
 
-    Examples:
+    data = await get_price(url)
 
-        /price iphone 16
+    text = (
+        f"📦 {data['title']}\n\n"
+        f"🏪 {data['seller']}\n"
+        f"💰 {data['price']}\n"
+        f"🖼 {data['image']}"
+    )
 
-        /price samsung s25 ultra
+    await update.message.reply_text(text)
 
-    Args:
-        update:
-            Telegram update.
 
-        context:
-            Telegram callback context.
-
-    Returns:
-        None.
-    """
-
-    # ------------------------------------------------------
-    # Validate user input.
-    # ------------------------------------------------------
-
-    if not context.args:
-
-        await send_warning_message(
-            update,
-            (
-                "Usage:\n"
-                "/price product name"
-            ),
+def register_price_handler(application):
+    application.add_handler(
+        CommandHandler(
+            "price",
+            price_command,
         )
-
-        return
-
-    # ------------------------------------------------------
-    # Build search query.
-    # ------------------------------------------------------
-
-    query = " ".join(
-        context.args,
-    )
-
-    # ------------------------------------------------------
-    # Create service.
-    # ------------------------------------------------------
-
-    service = PriceService()
-
-    # ------------------------------------------------------
-    # Search product.
-    # ------------------------------------------------------
-
-    product = await service.search(
-        query,
-    )
-
-    # ------------------------------------------------------
-    # Format result.
-    # ------------------------------------------------------
-
-    result = MessageFormatter.format_product(
-        product,
-    )
-
-    # ------------------------------------------------------
-    # Send result.
-    # ------------------------------------------------------
-
-    await send_message(
-        update,
-        result,
     )
