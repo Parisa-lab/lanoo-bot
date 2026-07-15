@@ -8,6 +8,8 @@ Usage:
 /price https://torob.com/p/xxxxxxxx/
 """
 
+import traceback
+
 from telegram import Update
 from telegram import InlineKeyboardButton
 from telegram import InlineKeyboardMarkup
@@ -29,10 +31,12 @@ async def price_command(
     print("PRICE COMMAND CALLED")
     print(context.args)
 
-    if update.message:
-        print(
-            f"CHAT ID = {update.message.chat_id}"
-        )
+    if not update.message:
+        return
+
+    print(
+        f"CHAT ID = {update.message.chat_id}"
+    )
 
     if not context.args:
 
@@ -94,6 +98,8 @@ async def price_command(
             ]
         )
 
+        print("SENDING RESULT")
+
         if image:
 
             await update.message.reply_photo(
@@ -115,11 +121,9 @@ async def price_command(
 
     except Exception as error:
 
-        print(
-            f"ERROR = {error}"
-        )
+        print("ERROR OCCURRED")
+        traceback.print_exc()
 
         await update.message.reply_text(
-            "Failed to fetch product.\n\n"
-            f"{error}"
+            f"ERROR:\n{repr(error)}"
         )
