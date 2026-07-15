@@ -9,6 +9,8 @@ Usage:
 """
 
 from telegram import Update
+from telegram import InlineKeyboardButton
+from telegram import InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
 from app.scrapers.torob import get_price
@@ -20,6 +22,9 @@ async def price_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
+    """
+    Handle /price command.
+    """
 
     print("PRICE COMMAND CALLED")
     print(context.args)
@@ -70,9 +75,23 @@ async def price_command(
         )
 
         caption = (
-            f"📦 {title}\n\n"
-            f"🏪 {seller}\n"
-            f"💰 {price}"
+            f"📦 Product\n"
+            f"{title}\n\n"
+            f"🏪 Seller\n"
+            f"{seller}\n\n"
+            f"💰 Price\n"
+            f"{price}"
+        )
+
+        keyboard = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        text="🛒 View on Torob",
+                        url=url,
+                    )
+                ]
+            ]
         )
 
         if image:
@@ -80,6 +99,7 @@ async def price_command(
             await update.message.reply_photo(
                 photo=image,
                 caption=caption,
+                reply_markup=keyboard,
             )
 
             print("PHOTO SENT")
@@ -87,7 +107,8 @@ async def price_command(
         else:
 
             await update.message.reply_text(
-                caption
+                text=caption,
+                reply_markup=keyboard,
             )
 
             print("TEXT SENT")
