@@ -9,7 +9,6 @@ Extract:
 - Cheapest price
 - Main image
 """
-raise Exception("TOROB FILE LOADED")
 
 
 import httpx
