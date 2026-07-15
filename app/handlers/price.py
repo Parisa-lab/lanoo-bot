@@ -3,9 +3,7 @@ from telegram.ext import ContextTypes
 
 from app.scrapers.torob import get_price
 
-
 print("PRICE FILE LOADED")
-
 
 
 async def price_command(
@@ -16,8 +14,16 @@ async def price_command(
     print("PRICE COMMAND CALLED")
     print(context.args)
 
+    print(
+        f"CHAT ID = {update.effective_chat.id}"
+    )
+
+    print(
+        f"USER ID = {update.effective_user.id}"
+    )
+
     await update.message.reply_text(
-        "Command received."
+        f"CHAT ID = {update.effective_chat.id}"
     )
 
     if not context.args:
