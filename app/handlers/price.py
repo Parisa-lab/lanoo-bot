@@ -1,38 +1,20 @@
-"""
-price.py
-
-Telegram command handler for Torob price lookup.
-
-Usage:
-
-/price https://torob.com/p/xxxxxxxx/
-
-The bot will extract:
-
-- Product title
-- Cheapest seller
-- Cheapest price
-- Product image
-"""
-
 from telegram import Update
 from telegram.ext import ContextTypes
 
 from app.scrapers.torob import get_price
 
-print("NEW PRICE HANDLER LOADED")
 
 async def price_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
-    """
-    Handle /price command.
 
-    Example:
+    print("PRICE COMMAND CALLED")
+    print(context.args)
 
-    /price https://torob.com/p/xxxxxxxx/
-    """
+    await update.message.reply_text(
+        "Command received."
+    )
 
     if not context.args:
 
@@ -46,7 +28,13 @@ async def price_command(
 
     try:
 
+        await update.message.reply_text(
+            "Fetching product..."
+        )
+
         data = await get_price(url)
+
+        print(data)
 
         title = data.get(
             "title",
@@ -69,23 +57,22 @@ async def price_command(
         )
 
         message = (
-            f"📦 Product\n"
-            f"{title}\n\n"
-            f"🏪 Seller\n"
-            f"{seller}\n\n"
-            f"💰 Price\n"
-            f"{price}\n\n"
-            f"🖼 Image\n"
-            f"{image}"
+            f"📦 {title}\n\n"
+            f"🏪 {seller}\n"
+            f"💰 {price}\n\n"
+            f"🖼 {image}"
         )
 
         await update.message.reply_text(
             message
         )
 
+        print("MESSAGE SENT")
+
     except Exception as error:
 
+        print(error)
+
         await update.message.reply_text(
-            f"Failed to fetch product.\n\n"
-            f"Error:\n{error}"
+            f"ERROR:\n{error}"
         )
