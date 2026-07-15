@@ -4,6 +4,10 @@ from telegram.ext import ContextTypes
 from app.scrapers.torob import get_price
 
 
+print("PRICE FILE LOADED")
+
+
+
 async def price_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
