@@ -1,13 +1,20 @@
 """
-app/scrapers/torob.py
+torob.py
+
+Torob HTML scraper.
+
+Extract:
+- Product title
+- Cheapest seller
+- Cheapest price
+- Main image
 """
 
-import asyncio
 import httpx
 from bs4 import BeautifulSoup
 
 
-async def get_price(url: str):
+async def get_price(url: str) -> dict:
 
     headers = {
         "User-Agent": (
@@ -25,49 +32,98 @@ async def get_price(url: str):
 
         response = await client.get(url)
 
-    soup = BeautifulSoup(response.text, "html.parser")
+    response.raise_for_status()
 
+    soup = BeautifulSoup(
+        response.text,
+        "html.parser",
+    )
+
+    # --------------------------------------------------
     # Product title
-    title = ""
+    # --------------------------------------------------
 
-    title_tag = soup.select_one("h1.Showcase_name1__kioZg")
+    title = "نامشخص"
+
+    title_tag = soup.select_one(
+        "h1.Showcase_name1__kioZg"
+    )
 
     if title_tag:
-        title = title_tag.get_text(strip=True)
+        title = title_tag.get_text(
+            strip=True
+        )
 
-    # Seller and price
-    seller = ""
-    price = ""
+    # --------------------------------------------------
+    # Cheapest seller
+    # --------------------------------------------------
 
-    boxes = soup.select("div.actions_buy_box_text__Ng2e8")
+    seller = "نامشخص"
 
-    if len(boxes) >= 2:
-        seller = boxes[0].get_text(strip=True)
-        price = boxes[1].get_text(strip=True)
+    seller_boxes = soup.select(
+        "div.actions_buy_box_text__Ng2e8"
+    )
 
-    # Product image
+    if len(seller_boxes) >= 1:
+        seller = seller_boxes[0].get_text(
+            strip=True
+        )
+
+    # --------------------------------------------------
+    # Cheapest price
+    # --------------------------------------------------
+
+    price = "نامشخص"
+
+    if len(seller_boxes) >= 2:
+        price = seller_boxes[1].get_text(
+            strip=True
+        )
+
+    # --------------------------------------------------
+    # Main image
+    # --------------------------------------------------
+
     image = ""
 
-    img = soup.select_one("div.Showcase_showcase__I1Z3f img")
+    img_tag = soup.select_one(
+        "div.Showcase_showcase__I1Z3f img"
+    )
 
-    if img:
-        image = img.get("src", "")
+    if img_tag:
+
+        image = (
+            img_tag.get("src")
+            or ""
+        )
+
+    # --------------------------------------------------
+    # Return result
+    # --------------------------------------------------
 
     return {
         "title": title,
-        "price": price,
         "seller": seller,
+        "price": price,
         "image": image,
     }
 
 
+# ------------------------------------------------------
+# Local test
+# ------------------------------------------------------
+
 if __name__ == "__main__":
 
-    url = (
+    import asyncio
+
+    TEST_URL = (
         "https://torob.com/p/"
-        "f498b27b-596c-47c8-a48d-0beed264b2d8/"
+        "facdcb68-43fb-432a-9088-7bbf4ff45f23/"
     )
 
-    result = asyncio.run(get_price(url))
+    result = asyncio.run(
+        get_price(TEST_URL)
+    )
 
     print(result)
