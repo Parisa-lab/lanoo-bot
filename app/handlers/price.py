@@ -1,3 +1,13 @@
+"""
+price.py
+
+Telegram command handler for Torob price lookup.
+
+Usage:
+
+/price https://torob.com/p/xxxxxxxx/
+"""
+
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -14,17 +24,10 @@ async def price_command(
     print("PRICE COMMAND CALLED")
     print(context.args)
 
-    print(
-        f"CHAT ID = {update.effective_chat.id}"
-    )
-
-    print(
-        f"USER ID = {update.effective_user.id}"
-    )
-
-    await update.message.reply_text(
-        f"CHAT ID = {update.effective_chat.id}"
-    )
+    if update.message:
+        print(
+            f"CHAT ID = {update.message.chat_id}"
+        )
 
     if not context.args:
 
@@ -66,23 +69,36 @@ async def price_command(
             "",
         )
 
-        message = (
+        caption = (
             f"📦 {title}\n\n"
             f"🏪 {seller}\n"
-            f"💰 {price}\n\n"
-            f"🖼 {image}"
+            f"💰 {price}"
         )
 
-        await update.message.reply_text(
-            message
-        )
+        if image:
 
-        print("MESSAGE SENT")
+            await update.message.reply_photo(
+                photo=image,
+                caption=caption,
+            )
+
+            print("PHOTO SENT")
+
+        else:
+
+            await update.message.reply_text(
+                caption
+            )
+
+            print("TEXT SENT")
 
     except Exception as error:
 
-        print(error)
+        print(
+            f"ERROR = {error}"
+        )
 
         await update.message.reply_text(
-            f"ERROR:\n{error}"
+            "Failed to fetch product.\n\n"
+            f"{error}"
         )
