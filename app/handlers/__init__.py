@@ -4,20 +4,28 @@ handlers package
 Register all Telegram handlers here.
 """
 
-from telegram.ext import Application
-from telegram.ext import CommandHandler
-
-from app.handlers.start import start
-from app.handlers.price import price_command
-
-
-
+# ==========================================================
+# Debug
+# ==========================================================
 
 print("HANDLERS INIT LOADED")
 
+# ==========================================================
+# Third-Party Imports
+# ==========================================================
 
+from telegram.ext import Application
+from telegram.ext import CommandHandler
 
+# ==========================================================
+# Local Imports
+# ==========================================================
 
+from app.handlers.price import price_command
+
+# ==========================================================
+# Registration
+# ==========================================================
 
 def register_handlers(
     application: Application,
@@ -26,12 +34,7 @@ def register_handlers(
     Register all Telegram handlers.
     """
 
-    application.add_handler(
-        CommandHandler(
-            "start",
-            start,
-        )
-    )
+    print("REGISTER_HANDLERS CALLED")
 
     application.add_handler(
         CommandHandler(
@@ -39,3 +42,5 @@ def register_handlers(
             price_command,
         )
     )
+
+    print("PRICE HANDLER REGISTERED")
