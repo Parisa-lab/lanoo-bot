@@ -18,6 +18,9 @@ import sys
 from app.bot import LanooBot
 
 
+from app.scrapers.torob import get_product_info
+
+
 # Create a logger for this module.
 logger = logging.getLogger(__name__)
 
@@ -54,5 +57,16 @@ def main() -> None:
         sys.exit(1)
 
 
+
+
+
+from app.scrapers.torob import get_product_info
+
 if __name__ == "__main__":
-    main()
+    result = get_product_info(
+        "https://torob.com/p/f498b27b-596c-47c8-a48d-0beed264b2d8/"
+    )
+
+    print(result)
+
+    # main()
