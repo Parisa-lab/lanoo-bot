@@ -2,13 +2,13 @@
 Job registration.
 """
 
-from app.jobs.price_monitor import check_prices
+from app.jobs.price_monitor import monitor_price
 
 
 def register_jobs(application):
 
     application.job_queue.run_repeating(
-        check_prices,
-        interval=3600,   # 1 hour
+        monitor_price,
+        interval=3600,
         first=10,
     )
