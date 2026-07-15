@@ -6,8 +6,6 @@ import asyncio
 from app.scrapers.torob import get_price
 
 
-raise Exception("MAIN FILE LOADED")
-
 
 if __name__ == "__main__":
 
