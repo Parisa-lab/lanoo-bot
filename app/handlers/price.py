@@ -1,5 +1,22 @@
+"""
+price.py
+
+Telegram command handler for Torob price lookup.
+
+Usage:
+
+/price https://torob.com/p/xxxxxxxx/
+
+The bot will extract:
+
+- Product title
+- Cheapest seller
+- Cheapest price
+- Product image
+"""
+
 from telegram import Update
-from telegram.ext import ContextTypes, CommandHandler
+from telegram.ext import ContextTypes
 
 from app.scrapers.torob import get_price
 
@@ -7,27 +24,67 @@ from app.scrapers.torob import get_price
 async def price_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-):
-    url = (
-        "https://torob.com/p/f498b27b-596c-47c8-a48d-0beed264b2d8/"
-    )
+) -> None:
+    """
+    Handle /price command.
 
-    data = await get_price(url)
+    Example:
 
-    text = (
-        f"📦 {data['title']}\n\n"
-        f"🏪 {data['seller']}\n"
-        f"💰 {data['price']}\n"
-        f"🖼 {data['image']}"
-    )
+    /price https://torob.com/p/xxxxxxxx/
+    """
 
-    await update.message.reply_text(text)
+    if not context.args:
 
-
-def register_price_handler(application):
-    application.add_handler(
-        CommandHandler(
-            "price",
-            price_command,
+        await update.message.reply_text(
+            "Usage:\n"
+            "/price https://torob.com/p/xxxxxxxx/"
         )
-    )
+        return
+
+    url = context.args[0]
+
+    try:
+
+        data = await get_price(url)
+
+        title = data.get(
+            "title",
+            "Unknown Product",
+        )
+
+        seller = data.get(
+            "seller",
+            "Unknown Seller",
+        )
+
+        price = data.get(
+            "price",
+            "Unknown Price",
+        )
+
+        image = data.get(
+            "image",
+            "",
+        )
+
+        message = (
+            f"📦 Product\n"
+            f"{title}\n\n"
+            f"🏪 Seller\n"
+            f"{seller}\n\n"
+            f"💰 Price\n"
+            f"{price}\n\n"
+            f"🖼 Image\n"
+            f"{image}"
+        )
+
+        await update.message.reply_text(
+            message
+        )
+
+    except Exception as error:
+
+        await update.message.reply_text(
+            f"Failed to fetch product.\n\n"
+            f"Error:\n{error}"
+        )
