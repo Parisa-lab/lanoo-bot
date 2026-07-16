@@ -21,6 +21,7 @@ from telegram.ext import CommandHandler
 # Local Imports
 # ==========================================================
 
+from app.handlers.start import start_command
 from app.handlers.price import price_command
 
 # ==========================================================
@@ -35,6 +36,15 @@ def register_handlers(
     """
 
     print("REGISTER_HANDLERS CALLED")
+
+    application.add_handler(
+        CommandHandler(
+            "start",
+            start_command,
+        )
+    )
+
+    print("START HANDLER REGISTERED")
 
     application.add_handler(
         CommandHandler(
