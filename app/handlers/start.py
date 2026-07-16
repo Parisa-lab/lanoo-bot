@@ -5,12 +5,17 @@ from app.scrapers.torob import get_price
 
 
 async def start(
+
+    logger.info("START COMMAND RECEIVED")
+
+
+
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
 
     await update.message.reply_text(
-        "شروع تست توروب..."
+        "Starting Torob Test"
     )
 
     url = (
