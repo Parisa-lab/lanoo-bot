@@ -21,8 +21,22 @@ from telegram.ext import CommandHandler
 # Local Imports
 # ==========================================================
 
-from app.handlers.start import start_command
 from app.handlers.price import price_command
+
+# ==========================================================
+# Start Command
+# ==========================================================
+
+async def start_command(update, context) -> None:
+
+    if not update.message:
+        return
+
+    await update.message.reply_text(
+        "Welcome to Lanoo Bot.\n\n"
+        "Usage:\n"
+        "/price <torob_url>"
+    )
 
 # ==========================================================
 # Registration
