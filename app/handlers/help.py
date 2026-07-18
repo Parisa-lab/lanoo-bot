@@ -1,48 +1,18 @@
-"""
-help.py
-
-Handle the /help command.
-
-This module sends a help message describing how
-users can interact with the bot.
-"""
-
-# Import Telegram update object.
 from telegram import Update
-
-# Import Telegram callback context.
 from telegram.ext import ContextTypes
 
-# Import the help message.
-from app.messages import HELP_MESSAGE
 
-# Import the message sender.
-from app.telegram import send_message
-
-
-async def help_handler(
+async def help_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
-    """
-    Handle the /help command.
 
-    Args:
-        update:
-            Incoming Telegram update.
+    if not update.message:
+        return
 
-        context:
-            Telegram callback context.
-
-    Returns:
-        None.
-    """
-
-    # The context parameter is currently unused.
-    _ = context
-
-    # Send the help message.
-    await send_message(
-        update=update,
-        text=HELP_MESSAGE,
+    await update.message.reply_text(
+        "Commands:\n\n"
+        "/start\n"
+        "/help\n"
+        "/price <torob_url>"
     )
