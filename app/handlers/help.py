@@ -7,12 +7,9 @@ async def help_command(
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
 
-    if not update.message:
-        return
-
     await update.message.reply_text(
         "Commands:\n\n"
-        "/start\n"
-        "/help\n"
-        "/price <torob_url>"
+        "/start - Start bot\n"
+        "/help - Show help\n"
+        "/price <torob_url> - Get product price"
     )
