@@ -14,6 +14,7 @@ from app.logger import setup_logging
 from app.handlers import register_handlers
 from app.error_handler import error_handler
 from app.jobs import register_jobs
+from app.database.database import init_database
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,9 @@ class LanooBot:
         logger.info(
             "Initializing Lanoo Bot..."
         )
+
+        # Create database if not exists
+        init_database()
 
         self.application = (
             Application.builder()
@@ -94,10 +98,6 @@ class LanooBot:
         logger.info(
             "Stopping bot..."
         )
-
-        if self.application:
-
-            self.application.stop()
 
         logger.info(
             "Bot stopped successfully."
