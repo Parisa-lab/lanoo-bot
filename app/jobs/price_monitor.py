@@ -5,11 +5,14 @@ Monitor Torob prices and notify only when price changes.
 """
 
 import logging
-from pathlib import Path
 
 from telegram.ext import ContextTypes
 
 from app.scrapers.torob import get_price
+from app.database import (
+    get_price as get_saved_price,
+    set_price,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -18,35 +21,6 @@ PRODUCT_URL = (
 )
 
 CHAT_ID = 625896200
-
-DATA_DIR = Path("data")
-DATA_DIR.mkdir(exist_ok=True)
-
-PRICE_FILE = DATA_DIR / "last_price.txt"
-
-
-def load_last_price() -> str | None:
-    """
-    Load previous price from file.
-    """
-
-    if not PRICE_FILE.exists():
-        return None
-
-    return PRICE_FILE.read_text(
-        encoding="utf-8"
-    ).strip()
-
-
-def save_price(price: str) -> None:
-    """
-    Save latest price.
-    """
-
-    PRICE_FILE.write_text(
-        price,
-        encoding="utf-8",
-    )
 
 
 async def monitor_price(
@@ -67,12 +41,18 @@ async def monitor_price(
         seller = data["seller"]
         new_price = data["price"]
 
-        old_price = load_last_price()
+        old_price = get_saved_price(
+            PRODUCT_URL
+        )
 
         # First run
+
         if old_price is None:
 
-            save_price(new_price)
+            set_price(
+                PRODUCT_URL,
+                new_price,
+            )
 
             await context.bot.send_message(
                 chat_id=CHAT_ID,
@@ -90,6 +70,7 @@ async def monitor_price(
             return
 
         # No change
+
         if old_price == new_price:
 
             logger.info(
@@ -99,7 +80,11 @@ async def monitor_price(
             return
 
         # Price changed
-        save_price(new_price)
+
+        set_price(
+            PRODUCT_URL,
+            new_price,
+        )
 
         message = (
             "PRICE CHANGED\n\n"
