@@ -1,104 +1,43 @@
 """
 database.py
 
-SQLite database layer.
+SQLite database utilities.
 """
 
 import sqlite3
 from pathlib import Path
 
-DB_FILE = Path(
+DATABASE_FILE = Path(
     "app/database/lanoo.db"
 )
 
 
-def get_connection():
+def init_database() -> None:
+    """
+    Create database and tables.
+    """
 
-    return sqlite3.connect(
-        DB_FILE
+    DATABASE_FILE.parent.mkdir(
+        parents=True,
+        exist_ok=True,
     )
 
+    connection = sqlite3.connect(
+        DATABASE_FILE
+    )
 
-def initialize_database() -> None:
-    """
-    Create database tables.
-    """
-
-    conn = get_connection()
-
-    cursor = conn.cursor()
+    cursor = connection.cursor()
 
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS prices (
-            product_url TEXT PRIMARY KEY,
-            price TEXT NOT NULL
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            product_url TEXT NOT NULL,
+            price TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
         """
     )
 
-    conn.commit()
-
-    conn.close()
-
-
-def get_price(
-    product_url: str,
-) -> str | None:
-
-    conn = get_connection()
-
-    cursor = conn.cursor()
-
-    cursor.execute(
-        """
-        SELECT price
-        FROM prices
-        WHERE product_url = ?
-        """,
-        (
-            product_url,
-        ),
-    )
-
-    row = cursor.fetchone()
-
-    conn.close()
-
-    if row is None:
-        return None
-
-    return row[0]
-
-
-def set_price(
-    product_url: str,
-    price: str,
-) -> None:
-
-    conn = get_connection()
-
-    cursor = conn.cursor()
-
-    cursor.execute(
-        """
-        INSERT OR REPLACE INTO prices
-        (
-            product_url,
-            price
-        )
-        VALUES
-        (
-            ?,
-            ?
-        )
-        """,
-        (
-            product_url,
-            price,
-        ),
-    )
-
-    conn.commit()
-
-    conn.close()
+    connection.commit()
+    connection.close()
