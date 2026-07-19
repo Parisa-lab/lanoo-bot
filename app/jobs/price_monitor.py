@@ -76,6 +76,7 @@ async def monitor_price(
         data = await get_price(
             PRODUCT_URL
         )
+        logger.info(f"SCRAPER DATA: {data}")
 
         title = data.get(
             "title",
