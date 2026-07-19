@@ -23,6 +23,36 @@ PRODUCT_URL = (
 CHAT_ID = 625896200
 
 
+def normalize_price(price: str) -> int:
+    """
+    Convert:
+    ۱۲٫۶۰۰٫۰۰۰ تومان
+
+    to:
+    12600000
+    """
+
+    persian_digits = "۰۱۲۳۴۵۶۷۸۹"
+    english_digits = "0123456789"
+
+    translation = str.maketrans(
+        persian_digits,
+        english_digits,
+    )
+
+    cleaned = (
+        str(price)
+        .translate(translation)
+        .replace("٫", "")
+        .replace(",", "")
+        .replace("تومان", "")
+        .replace(" ", "")
+        .strip()
+    )
+
+    return int(cleaned)
+
+
 async def monitor_price(
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
@@ -69,18 +99,19 @@ async def monitor_price(
 
             return
 
+        # Convert prices to numbers
+
+        old_price_num = normalize_price(
+            old_price
+        )
+
+        new_price_num = normalize_price(
+            new_price
+        )
+
         # No change
-        old_price_num = int(
-    str(old_price).replace(",", "")
-)
 
-        new_price = old_price_num - 1000
-
-
-
-
-
-        if old_price == new_price:
+        if old_price_num == new_price_num:
 
             logger.info(
                 "Price unchanged."
