@@ -70,7 +70,7 @@ async def monitor_price(
             return
 
         # No change
-
+        new_price = old_price - 1000
         if old_price == new_price:
 
             logger.info(
