@@ -1,13 +1,8 @@
 """
 torob.py
 
-Torob HTML scraper.
-
-Extract:
-- Product title
-- Cheapest seller
-- Cheapest price
-- Main image
+Temporary debug version.
+Prints first 5000 chars of Torob HTML.
 """
 
 import logging
@@ -42,6 +37,18 @@ async def get_price(url: str) -> dict | None:
     ) as client:
 
         response = await client.get(url)
+
+    logger.info(
+        "========== TOROB HTML START =========="
+    )
+
+    logger.info(
+        response.text[:5000]
+    )
+
+    logger.info(
+        "========== TOROB HTML END =========="
+    )
 
     if response.status_code == 429:
 
@@ -100,12 +107,18 @@ async def get_price(url: str) -> dict | None:
             or ""
         )
 
-    return {
+    result = {
         "title": title,
         "seller": seller,
         "price": price,
         "image": image,
     }
+
+    logger.info(
+        f"SCRAPER RESULT: {result}"
+    )
+
+    return result
 
 
 if __name__ == "__main__":
