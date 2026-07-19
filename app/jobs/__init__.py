@@ -12,6 +12,6 @@ def register_jobs(application):
 
     application.job_queue.run_repeating(
         monitor_price,
-        interval=600,
+        interval=300,
         first=10,
     )
