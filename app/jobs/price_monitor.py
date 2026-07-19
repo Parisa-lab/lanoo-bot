@@ -28,7 +28,7 @@ def normalize_price(price: str) -> int:
     Convert Persian price string to integer.
 
     Example:
-    ۱۲٫۶۰۰٫۰۰۰ تومان
+    ۱۲٬۶۰۰٬۰۰۰ تومان
     ->
     12600000
     """
@@ -45,6 +45,7 @@ def normalize_price(price: str) -> int:
         str(price)
         .translate(translation)
         .replace("٫", "")
+        .replace("٬", "")
         .replace(".", "")
         .replace(",", "")
         .replace("تومان", "")
@@ -76,7 +77,10 @@ async def monitor_price(
         data = await get_price(
             PRODUCT_URL
         )
-        logger.info(f"SCRAPER DATA: {data}")
+
+        logger.info(
+            f"SCRAPER DATA: {data}"
+        )
 
         title = data.get(
             "title",
@@ -101,24 +105,41 @@ async def monitor_price(
             f"Saved price: {old_price}"
         )
 
-     
-
-        
-        old_price_num = normalize_price(
-            old_price
-        )
-
         new_price_num = normalize_price(
             new_price
         )
 
-        if (
-            old_price_num == 0
-            or new_price_num == 0
-        ):
+        if new_price_num == 0:
+
             logger.warning(
-                "Invalid price detected."
+                "Invalid new price detected."
             )
+
+            return
+
+        if old_price is None:
+
+            set_price(
+                PRODUCT_URL,
+                new_price,
+            )
+
+            logger.info(
+                "Initial price saved."
+            )
+
+            return
+
+        old_price_num = normalize_price(
+            old_price
+        )
+
+        if old_price_num == 0:
+
+            logger.warning(
+                "Invalid saved price detected."
+            )
+
             return
 
         if old_price_num == new_price_num:
