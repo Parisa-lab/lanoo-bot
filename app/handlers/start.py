@@ -1,17 +1,20 @@
+import logging
+
 from telegram import Update
 from telegram.ext import ContextTypes
 
+logger = logging.getLogger(__name__)
 
-async def start_command(
+
+async def start(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
 
-    if not update.message:
-        return
+    logger.info(
+        f"/start received from user: {update.effective_user.id}"
+    )
 
     await update.message.reply_text(
-        "Welcome to Lanoo Bot.\n\n"
-        "Usage:\n"
-        "/price <torob_url>"
+        "Welcome to Lanoo Bot."
     )
