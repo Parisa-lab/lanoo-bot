@@ -9,7 +9,7 @@ import logging
 from telegram.ext import ContextTypes
 
 from app.scrapers.torob import get_price
-from app.database import (
+from app.database.database import (
     get_price as get_saved_price,
     set_price,
 )
@@ -24,6 +24,16 @@ CHAT_ID = 625896200
 
 
 def normalize_price(price: str) -> int:
+    """
+    Convert Persian price string to integer.
+    Example:
+    ۱۲٫۶۰۰٫۰۰۰ تومان
+    ->
+    12600000
+    """
+
+    if not price:
+        return 0
 
     persian_digits = "۰۱۲۳۴۵۶۷۸۹"
     english_digits = "0123456789"
@@ -37,13 +47,21 @@ def normalize_price(price: str) -> int:
         str(price)
         .translate(translation)
         .replace("٫", "")
+        .replace(".", "")
         .replace(",", "")
         .replace("تومان", "")
         .replace(" ", "")
         .strip()
     )
 
-    return int(cleaned)
+    digits_only = "".join(
+        ch for ch in cleaned if ch.isdigit()
+    )
+
+    if not digits_only:
+        return 0
+
+    return int(digits_only)
 
 
 async def monitor_price(
@@ -56,36 +74,42 @@ async def monitor_price(
             PRODUCT_URL
         )
 
-        if data is None:
+        title = data.get(
+            "title",
+            "نامشخص",
+        )
 
-            logger.warning(
-                "Skipping check because Torob returned 429."
-            )
+        seller = data.get(
+            "seller",
+            "نامشخص",
+        )
 
-            return
+        new_price = data.get(
+            "price",
+            "نامشخص",
+        )
 
-        title = data["title"]
-        seller = data["seller"]
-        new_price = data["price"]
+        logger.info(
+            f"Current scraped price: {new_price}"
+        )
 
         old_price = get_saved_price(
             PRODUCT_URL
         )
+
+        logger.info(
+            f"Saved price: {old_price}"
+        )
+
+        # First run
+        # Save only
+        # DO NOT send Telegram message
 
         if old_price is None:
 
             set_price(
                 PRODUCT_URL,
                 new_price,
-            )
-
-            await context.bot.send_message(
-                chat_id=CHAT_ID,
-                text=(
-                    "Price monitor started.\n\n"
-                    f"Product: {title}\n"
-                    f"Current Price: {new_price}"
-                ),
             )
 
             logger.info(
@@ -102,6 +126,19 @@ async def monitor_price(
             new_price
         )
 
+        logger.info(
+            f"Old: {old_price_num} | New: {new_price_num}"
+        )
+
+        if (
+            old_price_num == 0
+            or new_price_num == 0
+        ):
+            logger.warning(
+                "Invalid price detected."
+            )
+            return
+
         if old_price_num == new_price_num:
 
             logger.info(
@@ -116,7 +153,7 @@ async def monitor_price(
         )
 
         message = (
-            "PRICE CHANGED\n\n"
+            "🔔 PRICE CHANGED\n\n"
             f"Product:\n{title}\n\n"
             f"Seller:\n{seller}\n\n"
             f"Old Price:\n{old_price}\n\n"
@@ -135,6 +172,5 @@ async def monitor_price(
     except Exception as error:
 
         logger.exception(
-            "Price monitor failed: %s",
-            error,
+            f"Monitor error: {error}"
         )
