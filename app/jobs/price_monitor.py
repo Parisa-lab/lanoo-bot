@@ -26,11 +26,6 @@ CHAT_ID = 625896200
 def normalize_price(price: str) -> int:
     """
     Convert Persian price string to integer.
-
-    Example:
-    ۱۲٬۶۰۰٬۰۰۰ تومان
-    ->
-    12600000
     """
 
     persian_digits = "۰۱۲۳۴۵۶۷۸۹"
@@ -141,6 +136,9 @@ async def monitor_price(
             )
 
             return
+
+        # TEST ONLY
+        old_price_num = 10000000
 
         if old_price_num == new_price_num:
 
