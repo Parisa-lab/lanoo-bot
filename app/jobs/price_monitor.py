@@ -70,7 +70,16 @@ async def monitor_price(
             return
 
         # No change
-        new_price = old_price - 1000
+        old_price_num = int(
+    str(old_price).replace(",", "")
+)
+
+        new_price = old_price_num - 1000
+
+
+
+
+
         if old_price == new_price:
 
             logger.info(
