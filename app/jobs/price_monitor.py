@@ -100,23 +100,9 @@ async def monitor_price(
             f"Saved price: {old_price}"
         )
 
-        # First run
-        # Save only
-        # Do NOT send Telegram message
+     
 
-        if old_price is None:
-
-            set_price(
-                PRODUCT_URL,
-                new_price,
-            )
-
-            logger.info(
-                "Initial price saved."
-            )
-
-            return
-
+        
         old_price_num = normalize_price(
             old_price
         )
