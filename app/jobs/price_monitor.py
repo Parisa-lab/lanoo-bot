@@ -137,8 +137,6 @@ async def monitor_price(
 
             return
 
-        # TEST ONLY
-        old_price_num = 10000000
 
         if old_price_num == new_price_num:
 
