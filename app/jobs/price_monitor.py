@@ -24,13 +24,6 @@ CHAT_ID = 625896200
 
 
 def normalize_price(price: str) -> int:
-    """
-    Convert:
-    ۱۲٫۶۰۰٫۰۰۰ تومان
-
-    to:
-    12600000
-    """
 
     persian_digits = "۰۱۲۳۴۵۶۷۸۹"
     english_digits = "0123456789"
@@ -56,16 +49,20 @@ def normalize_price(price: str) -> int:
 async def monitor_price(
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
-    """
-    Check product price.
-    Send message only if changed.
-    """
 
     try:
 
         data = await get_price(
             PRODUCT_URL
         )
+
+        if data is None:
+
+            logger.warning(
+                "Skipping check because Torob returned 429."
+            )
+
+            return
 
         title = data["title"]
         seller = data["seller"]
@@ -74,8 +71,6 @@ async def monitor_price(
         old_price = get_saved_price(
             PRODUCT_URL
         )
-
-        # First run
 
         if old_price is None:
 
@@ -99,8 +94,6 @@ async def monitor_price(
 
             return
 
-        # Convert prices to numbers
-
         old_price_num = normalize_price(
             old_price
         )
@@ -109,8 +102,6 @@ async def monitor_price(
             new_price
         )
 
-        # No change
-
         if old_price_num == new_price_num:
 
             logger.info(
@@ -118,8 +109,6 @@ async def monitor_price(
             )
 
             return
-
-        # Price changed
 
         set_price(
             PRODUCT_URL,
@@ -145,4 +134,7 @@ async def monitor_price(
 
     except Exception as error:
 
-        logger.exception(error)
+        logger.exception(
+            "Price monitor failed: %s",
+            error,
+        )
