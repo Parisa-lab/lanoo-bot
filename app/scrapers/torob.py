@@ -10,19 +10,29 @@ Extract:
 - Main image
 """
 
+import logging
 
 import httpx
 from bs4 import BeautifulSoup
 
+logger = logging.getLogger(__name__)
 
-async def get_price(url: str) -> dict:
+
+async def get_price(url: str) -> dict | None:
 
     headers = {
         "User-Agent": (
-            "Mozilla/5.0 (Linux; Android 14) "
-            "AppleWebKit/537.36 "
-            "Chrome/124.0.0.0 Mobile Safari/537.36"
-        )
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/138.0.0.0 Safari/537.36"
+        ),
+        "Accept": (
+            "text/html,application/xhtml+xml,"
+            "application/xml;q=0.9,image/avif,"
+            "image/webp,*/*;q=0.8"
+        ),
+        "Accept-Language": "en-US,en;q=0.9",
+        "Cache-Control": "no-cache",
     }
 
     async with httpx.AsyncClient(
@@ -33,16 +43,20 @@ async def get_price(url: str) -> dict:
 
         response = await client.get(url)
 
+    if response.status_code == 429:
+
+        logger.warning(
+            "Torob rate limit reached (429)."
+        )
+
+        return None
+
     response.raise_for_status()
 
     soup = BeautifulSoup(
         response.text,
         "html.parser",
     )
-
-    # --------------------------------------------------
-    # Product title
-    # --------------------------------------------------
 
     title = "نامشخص"
 
@@ -55,10 +69,6 @@ async def get_price(url: str) -> dict:
             strip=True
         )
 
-    # --------------------------------------------------
-    # Cheapest seller
-    # --------------------------------------------------
-
     seller = "نامشخص"
 
     seller_boxes = soup.select(
@@ -70,20 +80,12 @@ async def get_price(url: str) -> dict:
             strip=True
         )
 
-    # --------------------------------------------------
-    # Cheapest price
-    # --------------------------------------------------
-
     price = "نامشخص"
 
     if len(seller_boxes) >= 2:
         price = seller_boxes[1].get_text(
             strip=True
         )
-
-    # --------------------------------------------------
-    # Main image
-    # --------------------------------------------------
 
     image = ""
 
@@ -98,10 +100,6 @@ async def get_price(url: str) -> dict:
             or ""
         )
 
-    # --------------------------------------------------
-    # Return result
-    # --------------------------------------------------
-
     return {
         "title": title,
         "seller": seller,
@@ -109,10 +107,6 @@ async def get_price(url: str) -> dict:
         "image": image,
     }
 
-
-# ------------------------------------------------------
-# Local test
-# ------------------------------------------------------
 
 if __name__ == "__main__":
 
