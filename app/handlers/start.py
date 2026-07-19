@@ -6,7 +6,7 @@ from telegram.ext import ContextTypes
 logger = logging.getLogger(__name__)
 
 
-async def start(
+async def start_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
