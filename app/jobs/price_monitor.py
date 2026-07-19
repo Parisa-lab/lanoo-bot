@@ -26,14 +26,12 @@ CHAT_ID = 625896200
 def normalize_price(price: str) -> int:
     """
     Convert Persian price string to integer.
+
     Example:
     ۱۲٫۶۰۰٫۰۰۰ تومان
     ->
     12600000
     """
-
-    if not price:
-        return 0
 
     persian_digits = "۰۱۲۳۴۵۶۷۸۹"
     english_digits = "0123456789"
@@ -55,7 +53,8 @@ def normalize_price(price: str) -> int:
     )
 
     digits_only = "".join(
-        ch for ch in cleaned if ch.isdigit()
+        ch for ch in cleaned
+        if ch.isdigit()
     )
 
     if not digits_only:
@@ -67,6 +66,10 @@ def normalize_price(price: str) -> int:
 async def monitor_price(
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
+    """
+    Check product price.
+    Send message only if changed.
+    """
 
     try:
 
@@ -89,10 +92,6 @@ async def monitor_price(
             "نامشخص",
         )
 
-        logger.info(
-            f"Current scraped price: {new_price}"
-        )
-
         old_price = get_saved_price(
             PRODUCT_URL
         )
@@ -103,7 +102,7 @@ async def monitor_price(
 
         # First run
         # Save only
-        # DO NOT send Telegram message
+        # Do NOT send Telegram message
 
         if old_price is None:
 
@@ -124,10 +123,6 @@ async def monitor_price(
 
         new_price_num = normalize_price(
             new_price
-        )
-
-        logger.info(
-            f"Old: {old_price_num} | New: {new_price_num}"
         )
 
         if (
