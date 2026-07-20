@@ -1,8 +1,15 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from app.database.repository import add_product
+
 from app.scrapers.torob import get_price
+
+
+
+from app.database.repository import add_product
+from app.database.repository import get_product_by_url
+
+
 
 
 async def add_command(
