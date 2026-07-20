@@ -23,7 +23,7 @@ AsyncSessionLocal,
 engine,
 )
 
-all = [
+__all__ = [
 "Base",
 "TrackedProduct",
 "PriceHistory",
