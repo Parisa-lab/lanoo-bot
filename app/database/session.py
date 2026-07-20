@@ -15,56 +15,56 @@ Author: Lanoo
 """
 
 from sqlalchemy.ext.asyncio import (
-AsyncSession,
+    AsyncSession,
 )
 from sqlalchemy.ext.asyncio import (
-async_sessionmaker,
+    async_sessionmaker,
 )
 from sqlalchemy.ext.asyncio import (
-create_async_engine,
+    create_async_engine,
 )
 
 from app.config import settings
 
----------------------------------------------------------------------
 
-Database Engine
-
----------------------------------------------------------------------
+# ---------------------------------------------------------------------
+# Database Engine
+# ---------------------------------------------------------------------
 
 engine = create_async_engine(
-settings.database_url,
-echo=False,
-pool_pre_ping=True,
-pool_size=10,
-max_overflow=20,
+    settings.database_url,
+    echo=False,
+    pool_pre_ping=True,
+    pool_size=10,
+    max_overflow=20,
 )
 
----------------------------------------------------------------------
 
-Session Factory
-
----------------------------------------------------------------------
+# ---------------------------------------------------------------------
+# Session Factory
+# ---------------------------------------------------------------------
 
 AsyncSessionLocal = async_sessionmaker(
-bind=engine,
-class_=AsyncSession,
-expire_on_commit=False,
+    bind=engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
 )
 
+
 async def get_session():
-"""
-Yield a database session.
+    """
+    Yield a database session.
 
-Useful for dependency injection and testing.
-"""
+    Useful for dependency injection and testing.
+    """
 
-async with AsyncSessionLocal() as session:
-    yield session
+    async with AsyncSessionLocal() as session:
+        yield session
+
 
 async def close_database() -> None:
-"""
-Gracefully dispose database connections.
-"""
+    """
+    Gracefully dispose database connections.
+    """
 
-await engine.dispose()
+    await engine.dispose()
