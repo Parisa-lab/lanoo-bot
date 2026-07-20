@@ -1,7 +1,7 @@
 """
-Job package exports.
+Background jobs package.
 
-Author: Lanoo
+Exports scheduled jobs.
 """
 
 from app.jobs.price_monitor import check_prices
