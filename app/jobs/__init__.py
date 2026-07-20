@@ -1,17 +1,11 @@
 """
-Job registration.
+Job package exports.
+
+Author: Lanoo
 """
 
-from app.jobs.price_monitor import monitor_price
+from app.jobs.price_monitor import check_prices
 
-
-def register_jobs(application):
-    """
-    Register scheduled jobs.
-    """
-
-    application.job_queue.run_repeating(
-        monitor_price,
-        interval=300,
-        first=10,
-    )
+__all__ = [
+    "check_prices",
+]
