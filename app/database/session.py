@@ -1,48 +1,27 @@
 """
 Database session management.
 
-This module creates the SQLAlchemy async engine and session factory
-used throughout the application.
-
-Supported databases:
-
-- PostgreSQL (recommended)
-
-Environment:
-DATABASE_URL=postgresql+asyncpg://...
+Creates the async SQLAlchemy engine and session factory
+used by the Lanoo application.
 
 Author: Lanoo
 """
 
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
-)
-from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
-)
-from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
 from app.config import settings
 
 
-# ---------------------------------------------------------------------
-# Database Engine
-# ---------------------------------------------------------------------
-
 engine = create_async_engine(
     settings.database_url,
     echo=False,
     pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
 )
 
-
-# ---------------------------------------------------------------------
-# Session Factory
-# ---------------------------------------------------------------------
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
@@ -53,9 +32,9 @@ AsyncSessionLocal = async_sessionmaker(
 
 async def get_session():
     """
-    Yield a database session.
+    Provide an async database session.
 
-    Useful for dependency injection and testing.
+    Used by repositories and dependency injection.
     """
 
     async with AsyncSessionLocal() as session:
@@ -64,7 +43,7 @@ async def get_session():
 
 async def close_database() -> None:
     """
-    Gracefully dispose database connections.
+    Close database connections gracefully.
     """
 
     await engine.dispose()
