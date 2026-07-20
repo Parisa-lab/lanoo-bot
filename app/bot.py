@@ -1,101 +1,121 @@
 """
-bot.py
+Telegram bot bootstrap.
 
-Create and run the Telegram bot.
+Responsible for:
+
+- Creating the Telegram Application
+- Registering handlers
+- Registering jobs
+- Configuring error handling
+- Starting the bot
+
+Author: Lanoo
 """
 
 import logging
 
-from telegram import Update
 from telegram.ext import Application
+from telegram.ext import CommandHandler
 
 from app.config import settings
-from app.logger import setup_logging
-from app.handlers import register_handlers
-from app.error_handler import error_handler
-from app.jobs import register_jobs
+from app.database.session import close_database
+from app.handlers.add import add_command
+from app.handlers.list_products import list_command
+from app.jobs.price_monitor import check_prices
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(name)
 
+async def error_handler(
+update,
+context,
+):
+"""
+Global error handler.
+"""
+
+logger.exception(
+    "Unhandled exception",
+    exc_info=context.error,
+)
 
 class LanooBot:
+"""
+Main Telegram bot application.
+"""
 
-    def __init__(self) -> None:
+def __init__(self) -> None:
 
-        setup_logging()
+    self.application = (
+        Application.builder()
+        .token(settings.bot_token)
+        .build()
+    )
 
-        logger.info(
-            "Initializing Lanoo Bot..."
+    self._register_handlers()
+    self._register_jobs()
+
+    self.application.add_error_handler(
+        error_handler
+    )
+
+def _register_handlers(
+    self,
+) -> None:
+    """
+    Register Telegram commands.
+    """
+
+    self.application.add_handler(
+        CommandHandler(
+            "add",
+            add_command,
         )
+    )
 
-
-        self.application = (
-            Application.builder()
-            .token(settings.bot_token)
-            .build()
+    self.application.add_handler(
+        CommandHandler(
+            "list",
+            list_command,
         )
+    )
 
-        self.application.add_error_handler(
-            error_handler
-        )
+def _register_jobs(
+    self,
+) -> None:
+    """
+    Register recurring background jobs.
+    """
 
-        logger.info(
-            "Telegram Application created successfully."
-        )
+    self.application.job_queue.run_repeating(
+        check_prices,
+        interval=900,
+        first=30,
+        name="price_monitor",
+    )
 
-    def register_handlers(self) -> None:
+async def post_shutdown(
+    self,
+    application: Application,
+) -> None:
+    """
+    Cleanup resources during shutdown.
+    """
 
-        logger.info(
-            "Registering command handlers..."
-        )
+    await close_database()
 
-        register_handlers(
-            self.application
-        )
+def run(self) -> None:
+    """
+    Start Telegram polling.
+    """
 
-        logger.info(
-            "All handlers registered successfully."
-        )
+    logger.info(
+        "Starting Lanoo Bot..."
+    )
 
-    def register_jobs(self) -> None:
+    self.application.post_shutdown = (
+        self.post_shutdown
+    )
 
-        logger.info(
-            "Registering jobs..."
-        )
-
-        register_jobs(
-            self.application
-        )
-
-        logger.info(
-            "All jobs registered successfully."
-        )
-
-    def run(self) -> None:
-
-        logger.info(
-            "Starting Lanoo Bot..."
-        )
-
-        self.register_handlers()
-
-        self.register_jobs()
-
-        logger.info(
-            "Bot started successfully."
-        )
-
-        self.application.run_polling(
-            drop_pending_updates=True,
-            allowed_updates=Update.ALL_TYPES,
-        )
-
-    def stop(self) -> None:
-
-        logger.info(
-            "Stopping bot..."
-        )
-
-        logger.info(
-            "Bot stopped successfully."
-        )
+    self.application.run_polling(
+        drop_pending_updates=True
+    )
