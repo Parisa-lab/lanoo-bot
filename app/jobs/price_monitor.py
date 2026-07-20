@@ -17,91 +17,87 @@ Telegram Notifications
 Author: Lanoo
 """
 
+import logging
+
 from telegram.ext import ContextTypes
 
 from app.database.repository import get_all_products
 from app.database.repository import update_price
 from app.scrapers.torob import get_price
 
-Optional: replace with your project's logger
+logger = logging.getLogger(__name__)
 
-import logging
-
-logger = logging.getLogger(name)
 
 async def check_prices(
-context: ContextTypes.DEFAULT_TYPE,
+    context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
-"""
-Check all tracked products and notify users when prices change.
+    """
+    Check all tracked products and notify users when prices change.
 
-This job should be registered with the JobQueue and executed
-periodically (e.g. every 15 minutes).
-"""
+    This job should be registered with the JobQueue and executed
+    periodically (for example every 15 minutes).
+    """
 
-try:
+    try:
+        products = await get_all_products()
 
-    products = await get_all_products()
+        logger.info(
+            "Checking %s tracked products",
+            len(products),
+        )
 
-    logger.info(
-        "Checking %s tracked products",
-        len(products),
-    )
-
-    for product in products:
-
-        try:
-
-            data = await get_price(
-                product.url
-            )
-
-            if not data:
-                logger.warning(
-                    "Failed to fetch product data: %s",
+        for product in products:
+            try:
+                data = await get_price(
                     product.url,
                 )
-                continue
 
-            current_price = str(
-                data["price"]
-            )
+                if not data:
+                    logger.warning(
+                        "Failed to fetch product data: %s",
+                        product.url,
+                    )
+                    continue
 
-            old_price = str(
-                product.last_price
-            )
+                current_price = str(
+                    data["price"]
+                )
 
-            if current_price == old_price:
-                continue
+                old_price = str(
+                    product.last_price
+                )
 
-            await context.bot.send_message(
-                chat_id=product.chat_id,
-                text=(
-                    "📉 Price Change Detected\n\n"
-                    f"Product: {product.title}\n"
-                    f"Old Price: {old_price}\n"
-                    f"New Price: {current_price}\n\n"
-                    f"{product.url}"
-                ),
-            )
+                if current_price == old_price:
+                    continue
 
-            await update_price(
-                product_id=product.id,
-                new_price=current_price,
-            )
+                await context.bot.send_message(
+                    chat_id=product.chat_id,
+                    text=(
+                        "📉 Price Change Detected\n\n"
+                        f"Product: {product.title}\n"
+                        f"Old Price: {old_price}\n"
+                        f"New Price: {current_price}\n\n"
+                        f"{product.url}"
+                    ),
+                )
 
-            logger.info(
-                "Price updated for product %s",
-                product.id,
-            )
+                await update_price(
+                    product_id=product.id,
+                    new_price=current_price,
+                )
 
-        except Exception:
-            logger.exception(
-                "Failed processing product %s",
-                product.id,
-            )
+                logger.info(
+                    "Price updated for product %s",
+                    product.id,
+                )
 
-except Exception:
-    logger.exception(
-        "Price monitor job failed"
-    )
+            except Exception:
+                logger.exception(
+                    "Failed processing product %s",
+                    product.id,
+                )
+
+    except Exception:
+        logger.exception(
+            "Price monitor job failed",
+        )
