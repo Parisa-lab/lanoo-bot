@@ -16,6 +16,10 @@ from telegram import InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
 from app.scrapers.torob import get_price
+from app.database.repository import (
+    add_product,
+    get_product_by_url,
+)
 
 print("PRICE FILE LOADED")
 
@@ -44,6 +48,7 @@ async def price_command(
             "Usage:\n"
             "/price https://torob.com/p/xxxxxxxx/"
         )
+
         return
 
     url = context.args[0]
@@ -77,6 +82,30 @@ async def price_command(
             "image",
             "",
         )
+
+        existing_product = await get_product_by_url(
+            chat_id=update.message.chat_id,
+            url=url,
+        )
+
+        if not existing_product:
+
+            await add_product(
+                chat_id=update.message.chat_id,
+                url=url,
+                title=title,
+                price=price,
+            )
+
+            print(
+                "PRODUCT SAVED TO DATABASE"
+            )
+
+        else:
+
+            print(
+                "PRODUCT ALREADY EXISTS"
+            )
 
         caption = (
             f"📦 Product\n"
