@@ -29,7 +29,12 @@ async def startup():
 
 def main():
     try:
-        asyncio.run(startup())
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        loop.run_until_complete(
+            startup()
+        )
 
         logger.info("Starting bot...")
 
@@ -40,7 +45,9 @@ def main():
         logger.info("Application stopped.")
 
     except Exception:
-        logger.exception("Fatal startup error.")
+        logger.exception(
+            "Fatal startup error."
+        )
         sys.exit(1)
 
 
