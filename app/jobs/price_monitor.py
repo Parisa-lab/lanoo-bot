@@ -1,175 +1,107 @@
 """
-price_monitor.py
+Price monitoring job for Lanoo.
 
-Monitor Torob prices and notify only when price changes.
+This module periodically checks all tracked products stored in PostgreSQL
+and sends Telegram notifications whenever a price change is detected.
+
+Architecture:
+
+PostgreSQL
+↓
+Repository Layer
+↓
+Price Monitor
+↓
+Telegram Notifications
+
+Author: Lanoo
 """
-
-import logging
 
 from telegram.ext import ContextTypes
 
+from app.database.repository import get_all_products
+from app.database.repository import update_price
 from app.scrapers.torob import get_price
-from app.database.database import (
-    get_price as get_saved_price,
-    set_price,
-)
 
-logger = logging.getLogger(__name__)
+Optional: replace with your project's logger
 
-PRODUCT_URL = (
-    "https://torob.com/p/f498b27b-596c-47c8-a48d-0beed264b2d8/"
-)
+import logging
 
-CHAT_ID = 625896200
+logger = logging.getLogger(name)
 
-
-def normalize_price(price: str) -> int:
-    """
-    Convert Persian price string to integer.
-    """
-
-    persian_digits = "۰۱۲۳۴۵۶۷۸۹"
-    english_digits = "0123456789"
-
-    translation = str.maketrans(
-        persian_digits,
-        english_digits,
-    )
-
-    cleaned = (
-        str(price)
-        .translate(translation)
-        .replace("٫", "")
-        .replace("٬", "")
-        .replace(".", "")
-        .replace(",", "")
-        .replace("تومان", "")
-        .replace(" ", "")
-        .strip()
-    )
-
-    digits_only = "".join(
-        ch for ch in cleaned
-        if ch.isdigit()
-    )
-
-    if not digits_only:
-        return 0
-
-    return int(digits_only)
-
-
-async def monitor_price(
-    context: ContextTypes.DEFAULT_TYPE,
+async def check_prices(
+context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
-    """
-    Check product price.
-    Send message only if changed.
-    """
+"""
+Check all tracked products and notify users when prices change.
 
-    try:
+This job should be registered with the JobQueue and executed
+periodically (e.g. every 15 minutes).
+"""
 
-        data = await get_price(
-            PRODUCT_URL
-        )
+try:
 
-        logger.info(
-            f"SCRAPER DATA: {data}"
-        )
+    products = await get_all_products()
 
-        title = data.get(
-            "title",
-            "نامشخص",
-        )
+    logger.info(
+        "Checking %s tracked products",
+        len(products),
+    )
 
-        seller = data.get(
-            "seller",
-            "نامشخص",
-        )
+    for product in products:
 
-        new_price = data.get(
-            "price",
-            "نامشخص",
-        )
+        try:
 
-        old_price = get_saved_price(
-            PRODUCT_URL
-        )
-
-        logger.info(
-            f"Saved price: {old_price}"
-        )
-
-        new_price_num = normalize_price(
-            new_price
-        )
-
-        if new_price_num == 0:
-
-            logger.warning(
-                "Invalid new price detected."
+            data = await get_price(
+                product.url
             )
 
-            return
+            if not data:
+                logger.warning(
+                    "Failed to fetch product data: %s",
+                    product.url,
+                )
+                continue
 
-        if old_price is None:
+            current_price = str(
+                data["price"]
+            )
 
-            set_price(
-                PRODUCT_URL,
-                new_price,
+            old_price = str(
+                product.last_price
+            )
+
+            if current_price == old_price:
+                continue
+
+            await context.bot.send_message(
+                chat_id=product.chat_id,
+                text=(
+                    "📉 Price Change Detected\n\n"
+                    f"Product: {product.title}\n"
+                    f"Old Price: {old_price}\n"
+                    f"New Price: {current_price}\n\n"
+                    f"{product.url}"
+                ),
+            )
+
+            await update_price(
+                product_id=product.id,
+                new_price=current_price,
             )
 
             logger.info(
-                "Initial price saved."
+                "Price updated for product %s",
+                product.id,
             )
 
-            return
-
-        old_price_num = normalize_price(
-            old_price
-        )
-
-        if old_price_num == 0:
-
-            logger.warning(
-                "Invalid saved price detected."
+        except Exception:
+            logger.exception(
+                "Failed processing product %s",
+                product.id,
             )
 
-            return
-
-
-        if old_price_num == new_price_num:
-
-            logger.info(
-                "Price unchanged."
-            )
-
-            return
-
-        set_price(
-            PRODUCT_URL,
-            new_price,
-        )
-
-        message = (
-            "🔔 PRICE CHANGED\n\n"
-            f"Product:\n{title}\n\n"
-            f"Seller:\n{seller}\n\n"
-            f"Old Price:\n{old_price}\n\n"
-            f"New Price:\n{new_price}"
-        )
-
-        await context.bot.send_message(
-            chat_id=CHAT_ID,
-            text=message,
-        )
-
-        logger.info(
-            "Price change notification sent."
-        )
-
-    except Exception as error:
-
-        logger.exception(
-            f"Monitor error: {error}"
-        )
+except Exception:
+    logger.exception(
+        "Price monitor job failed"
+    )
