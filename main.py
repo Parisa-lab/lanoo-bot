@@ -1,14 +1,7 @@
 """
 Application entry point for Lanoo.
 
-Responsibilities:
-
-- Configure logging
-- Create database tables
-- Start the Telegram bot
-- Handle startup failures gracefully
-
-Author: Lanoo
+Initializes the database and starts the Telegram bot.
 """
 
 import asyncio
@@ -19,36 +12,16 @@ from app.bot import LanooBot
 from app.database.models import Base
 from app.database.session import engine
 
----------------------------------------------------------------------
-
-Logging Configuration
-
----------------------------------------------------------------------
-
 logging.basicConfig(
 level=logging.INFO,
-format=(
-"%(asctime)s | "
-"%(levelname)s | "
-"%(name)s | "
-"%(message)s"
-),
+format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
 )
 
 logger = logging.getLogger(name)
 
----------------------------------------------------------------------
-
-Database Initialization
-
----------------------------------------------------------------------
-
 async def create_tables() -> None:
 """
-Create database tables if they do not exist.
-
-SQLAlchemy will compare the ORM models against the database
-and create missing tables.
+Create database tables if they do not already exist.
 """
 
 async with engine.begin() as conn:
@@ -58,28 +31,22 @@ async with engine.begin() as conn:
 
 async def startup() -> None:
 """
-Perform application startup tasks.
+Run startup tasks.
 """
 
 logger.info(
-    "Initializing database..."
+    "Creating database tables..."
 )
 
 await create_tables()
 
 logger.info(
-    "Database initialization completed."
+    "Database ready."
 )
-
----------------------------------------------------------------------
-
-Main Application
-
----------------------------------------------------------------------
 
 def main() -> None:
 """
-Application entry point.
+Main application entry point.
 """
 
 try:
@@ -89,22 +56,23 @@ try:
     )
 
     logger.info(
-        "Starting Telegram bot..."
+        "Starting bot..."
     )
 
     bot = LanooBot()
+
     bot.run()
 
 except KeyboardInterrupt:
 
     logger.info(
-        "Application stopped by user."
+        "Application stopped."
     )
 
 except Exception:
 
     logger.exception(
-        "Fatal application error."
+        "Fatal startup error."
     )
 
     sys.exit(1)
