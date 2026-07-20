@@ -7,38 +7,42 @@ from app.database.models import Base
 from app.database.session import engine
 
 logging.basicConfig(
-level=logging.INFO,
-format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
 )
 
-logger = logging.getLogger(name)
+logger = logging.getLogger(__name__)
+
 
 async def create_tables():
-async with engine.begin() as conn:
-await conn.run_sync(
-Base.metadata.create_all
-)
+    async with engine.begin() as conn:
+        await conn.run_sync(
+            Base.metadata.create_all
+        )
+
 
 async def startup():
-logger.info("Creating database tables...")
-await create_tables()
-logger.info("Database ready.")
+    logger.info("Creating database tables...")
+    await create_tables()
+    logger.info("Database ready.")
+
 
 def main():
-try:
-asyncio.run(startup())
+    try:
+        asyncio.run(startup())
 
-    logger.info("Starting bot...")
+        logger.info("Starting bot...")
 
-    bot = LanooBot()
-    bot.run()
+        bot = LanooBot()
+        bot.run()
 
-except KeyboardInterrupt:
-    logger.info("Application stopped.")
+    except KeyboardInterrupt:
+        logger.info("Application stopped.")
 
-except Exception:
-    logger.exception("Fatal startup error.")
-    sys.exit(1)
+    except Exception:
+        logger.exception("Fatal startup error.")
+        sys.exit(1)
 
-if name == "main":
-main()
+
+if __name__ == "__main__":
+    main()
