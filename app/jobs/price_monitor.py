@@ -1,7 +1,15 @@
 """
 Price monitoring job for Lanoo.
 
-Checks all tracked products and notifies users when prices change.
+This module is responsible for:
+- Checking tracked products periodically.
+- Fetching current prices from scrapers.
+- Detecting price changes.
+- Notifying users through Telegram.
+- Updating stored prices.
+
+The job is registered through register_price_monitor_job()
+and executed by python-telegram-bot JobQueue.
 """
 
 import logging
@@ -12,12 +20,24 @@ from app.database.repository import get_all_products
 from app.database.repository import update_price
 from app.scrapers.torob import get_price
 
+
 logger = logging.getLogger(__name__)
 
 
 def normalize_price(price: str) -> int:
     """
-    Convert Persian price string to integer.
+    Convert Persian or formatted price text into an integer.
+
+    Examples:
+        "۱٬۲۰۰٬۰۰۰ تومان" -> 1200000
+        "1,200,000" -> 1200000
+
+    Args:
+        price:
+            Price string.
+
+    Returns:
+        Integer representation of the price.
     """
 
     persian_digits = "۰۱۲۳۴۵۶۷۸۹"
@@ -41,8 +61,9 @@ def normalize_price(price: str) -> int:
     )
 
     digits = "".join(
-        c for c in cleaned
-        if c.isdigit()
+        character
+        for character in cleaned
+        if character.isdigit()
     )
 
     if not digits:
@@ -55,7 +76,12 @@ async def check_prices(
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
     """
-    Check all tracked products and notify on price changes.
+    Check all tracked products and notify users
+    when a price change is detected.
+
+    Args:
+        context:
+            Telegram callback context.
     """
 
     try:
@@ -92,19 +118,15 @@ async def check_prices(
                 )
 
                 old_price = str(
-                    product.last_price
+                    product.last_price,
                 )
 
-                current_price_num = (
-                    normalize_price(
-                        current_price
-                    )
+                current_price_num = normalize_price(
+                    current_price,
                 )
 
-                old_price_num = (
-                    normalize_price(
-                        old_price
-                    )
+                old_price_num = normalize_price(
+                    old_price,
                 )
 
                 logger.info(
@@ -118,20 +140,24 @@ async def check_prices(
                     current_price_num == 0
                     or old_price_num == 0
                 ):
+
                     logger.warning(
                         "Invalid price detected for product %s",
                         product.id,
                     )
+
                     continue
 
                 if (
                     current_price_num
                     == old_price_num
                 ):
+
                     logger.info(
                         "Price unchanged for product %s",
                         product.id,
                     )
+
                     continue
 
                 await context.bot.send_message(
@@ -167,3 +193,38 @@ async def check_prices(
         logger.exception(
             "Price monitor job failed",
         )
+
+
+def register_price_monitor_job(
+    application,
+) -> None:
+    """
+    Register price monitoring as a recurring job.
+
+    Args:
+        application:
+            Telegram Application instance.
+
+    The job runs every hour and checks
+    all tracked products for price changes.
+    """
+
+    if application.job_queue is None:
+
+        logger.warning(
+            "Job queue is unavailable. "
+            "Price monitoring was not registered.",
+        )
+
+        return
+
+    application.job_queue.run_repeating(
+        check_prices,
+        interval=3600,
+        first=10,
+        name="price_monitor",
+    )
+
+    logger.info(
+        "Price monitoring job registered successfully",
+    )
