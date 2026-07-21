@@ -1,18 +1,28 @@
+"""
+LanooBot main Telegram application.
+
+This module creates and manages the Telegram bot instance.
+Handler registration is delegated to the handlers package.
+"""
+
 import logging
 
 from telegram.ext import Application
-from telegram.ext import CommandHandler
 
 from app.config import settings
+from app.handlers import register_handlers
+from app.jobs.price_monitor import register_price_monitor_job
 from app.database.session import close_database
-from app.handlers.add import add_command
-from app.handlers.list_products import list_command
-from app.jobs.price_monitor import check_prices
+
 
 logger = logging.getLogger(__name__)
 
 
 async def error_handler(update, context):
+    """
+    Handle unexpected Telegram errors.
+    """
+
     logger.exception(
         "Unhandled exception",
         exc_info=context.error,
@@ -20,63 +30,47 @@ async def error_handler(update, context):
 
 
 class LanooBot:
+    """
+    Main bot controller.
+    """
 
     def __init__(self):
+        """
+        Initialize Telegram application.
+        """
 
         self.application = (
             Application.builder()
-            .token(settings.bot_token)
+            .token(settings.BOT_TOKEN)
             .build()
         )
 
-        self._register_handlers()
-        self._register_jobs()
+        register_handlers(
+            self.application
+        )
+
+        register_price_monitor_job(
+            self.application
+        )
 
         self.application.add_error_handler(
             error_handler
         )
 
-    def _register_handlers(self):
+    async def shutdown(self):
+        """
+        Close resources before shutdown.
+        """
 
-        self.application.add_handler(
-            CommandHandler(
-                "add",
-                add_command,
-            )
-        )
-
-        self.application.add_handler(
-            CommandHandler(
-                "list",
-                list_command,
-            )
-        )
-
-    def _register_jobs(self):
-
-        self.application.job_queue.run_repeating(
-            check_prices,
-            interval=900,
-            first=30,
-            name="price_monitor",
-        )
-
-    async def post_shutdown(
-        self,
-        application,
-    ):
         await close_database()
 
     def run(self):
+        """
+        Start polling.
+        """
 
         logger.info(
-            "Starting Lanoo Bot..."
+            "Starting LanooBot..."
         )
 
-        self.application.post_shutdown = (
-            self.post_shutdown
-        )
-
-        self.application.run_polling(
-            drop_pending_updates=True
-        )
+        self.application.run_polling()
