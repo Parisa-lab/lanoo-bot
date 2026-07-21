@@ -1,58 +1,64 @@
 """
-handlers package
+Telegram command handler registration.
 
-Register all Telegram handlers here.
+This module is the single entry point for all bot commands.
 """
 
-# ==========================================================
-# Third-Party Imports
-# ==========================================================
+import logging
 
-from telegram.ext import Application
-from telegram.ext import CommandHandler
-
-# ==========================================================
-# Local Imports
-# ==========================================================
+from telegram.ext import (
+    Application,
+    CommandHandler,
+)
 
 from app.handlers.start import start_command
 from app.handlers.help import help_command
 from app.handlers.price import price_command
+from app.handlers.add import add_command
+from app.handlers.list_products import list_command
 
-# ==========================================================
-# Registration
-# ==========================================================
+
+logger = logging.getLogger(__name__)
+
 
 def register_handlers(
     application: Application,
 ) -> None:
     """
-    Register all Telegram handlers.
+    Register all Telegram command handlers.
+
+    Args:
+        application:
+            Telegram application instance.
     """
 
-    print("REGISTER_HANDLERS CALLED")
-
-    application.add_handler(
+    handlers = [
         CommandHandler(
             "start",
             start_command,
-        )
-    )
-
-    application.add_handler(
+        ),
         CommandHandler(
             "help",
             help_command,
-        )
-    )
-
-    application.add_handler(
+        ),
         CommandHandler(
             "price",
             price_command,
-        )
-    )
+        ),
+        CommandHandler(
+            "add",
+            add_command,
+        ),
+        CommandHandler(
+            "list",
+            list_command,
+        ),
+    ]
 
-    print("START HANDLER REGISTERED")
-    print("HELP HANDLER REGISTERED")
-    print("PRICE HANDLER REGISTERED")
+    for handler in handlers:
+        application.add_handler(handler)
+
+    logger.info(
+        "%s handlers registered",
+        len(handlers),
+    )
