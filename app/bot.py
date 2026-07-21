@@ -41,7 +41,7 @@ class LanooBot:
 
         self.application = (
             Application.builder()
-            .token(settings.BOT_TOKEN)
+            .token(settings.bot_token)
             .build()
         )
 
