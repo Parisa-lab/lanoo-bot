@@ -1,67 +1,59 @@
 """
-price_service.py
+app/services/price_service.py
 
-Business logic for product searches.
+Business logic for Torob product lookups.
+
+This service now uses the real TorobScraper class instead of importing a
+non-existent class from the package.
 """
 
-# ==========================================================
-# Standard Library Imports
-# ==========================================================
+from __future__ import annotations
 
 import logging
+from typing import Any
 
-# ==========================================================
-# Local Imports
-# ==========================================================
-
-from app.models import Product
 from app.scrapers import TorobScraper
-
-# ==========================================================
-# Logger
-# ==========================================================
 
 logger = logging.getLogger(__name__)
 
 
 class PriceService:
     """
-    Product price search service.
+    Product price lookup service.
+
+    This is intentionally thin:
+    - validate input
+    - call the scraper
+    - return the scraped result
     """
 
-    def __init__(self) -> None:
+    def __init__(self, scraper: TorobScraper | None = None) -> None:
         """
-        Initialize service.
-        """
-
-        self.torob = TorobScraper()
-
-    async def search(
-        self,
-        query: str,
-    ) -> Product:
-        """
-        Search product.
+        Initialize the service.
 
         Args:
-            query:
-                Product search query.
+            scraper: Optional scraper instance for dependency injection.
+        """
+        self.torob = scraper or TorobScraper()
+
+    async def search(self, url: str) -> dict[str, Any] | None:
+        """
+        Look up a Torob product page.
+
+        Args:
+            url: Torob product URL.
 
         Returns:
-            Product.
+            Scraped product data or None.
         """
+        if not isinstance(url, str) or not url.strip():
+            logger.warning("PriceService.search received an invalid URL.")
+            return None
 
-        logger.info(
-            "Price search started: %s",
-            query,
-        )
+        url = url.strip()
 
-        product = await self.torob.search(
-            query,
-        )
+        logger.info("Price search started: %s", url)
+        result = await self.torob.get_price(url)
+        logger.info("Price search completed: %s", url)
 
-        logger.info(
-            "Price search completed."
-        )
-
-        return product
+        return result
