@@ -1,10 +1,16 @@
 """
 app/services/price_service.py
 
-Business logic for Torob product lookups.
+Business logic for product lookups and tracking.
 
-This service now uses the real TorobScraper class instead of importing a
-non-existent class from the package.
+Responsibilities:
+- Validate URLs
+- Call Torob scraper
+- Save products
+- Check if products already exist
+- Return product information
+
+Handlers should never call repository functions directly.
 """
 
 from __future__ import annotations
@@ -12,6 +18,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from app.database.repository import add_product
+from app.database.repository import get_product_by_url
 from app.scrapers import TorobScraper
 
 logger = logging.getLogger(__name__)
@@ -19,41 +27,94 @@ logger = logging.getLogger(__name__)
 
 class PriceService:
     """
-    Product price lookup service.
-
-    This is intentionally thin:
-    - validate input
-    - call the scraper
-    - return the scraped result
+    Main application service for products.
     """
 
-    def __init__(self, scraper: TorobScraper | None = None) -> None:
-        """
-        Initialize the service.
+    def __init__(
+        self,
+        scraper: TorobScraper | None = None,
+    ) -> None:
 
-        Args:
-            scraper: Optional scraper instance for dependency injection.
-        """
         self.torob = scraper or TorobScraper()
 
-    async def search(self, url: str) -> dict[str, Any] | None:
+    async def search(
+        self,
+        url: str,
+    ) -> dict[str, Any] | None:
         """
-        Look up a Torob product page.
-
-        Args:
-            url: Torob product URL.
+        Scrape product information.
 
         Returns:
-            Scraped product data or None.
+            Product data dictionary or None.
         """
-        if not isinstance(url, str) or not url.strip():
-            logger.warning("PriceService.search received an invalid URL.")
+
+        if not isinstance(url, str):
             return None
 
         url = url.strip()
 
-        logger.info("Price search started: %s", url)
-        result = await self.torob.get_price(url)
-        logger.info("Price search completed: %s", url)
+        if not url:
+            return None
 
-        return result
+        logger.info(
+            "Searching product: %s",
+            url,
+        )
+
+        return await self.torob.get_price(url)
+
+    async def is_tracked(
+        self,
+        chat_id: int,
+        url: str,
+    ) -> bool:
+        """
+        Check whether a product is already tracked.
+        """
+
+        product = await get_product_by_url(
+            chat_id=chat_id,
+            url=url,
+        )
+
+        return product is not None
+
+    async def track_product(
+        self,
+        chat_id: int,
+        url: str,
+    ) -> dict[str, Any] | None:
+        """
+        Scrape and save a product.
+
+        Returns:
+            Product data if successful.
+        """
+
+        data = await self.search(url)
+
+        if not data:
+            return None
+
+        already_exists = await self.is_tracked(
+            chat_id=chat_id,
+            url=url,
+        )
+
+        if already_exists:
+            return data
+
+        await add_product(
+            chat_id=chat_id,
+            url=url,
+            title=data["title"],
+            price=data["price"],
+        )
+
+        logger.info(
+            "Tracked new product. chat_id=%s url=%s",
+            chat_id,
+            url,
+        )
+
+        return data
