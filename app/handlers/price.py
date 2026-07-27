@@ -1,27 +1,33 @@
 """
-price.py
+app/handlers/price.py
 
 Telegram command handler for Torob price lookup.
 
-Usage:
+Responsibilities:
+- Read Telegram command arguments
+- Call PriceService
+- Save product information if needed
+- Display formatted results
 
-/price https://torob.com/p/xxxxxxxx/
+The handler should not communicate with the scraper directly.
 """
 
-import traceback
+from __future__ import annotations
 
-from telegram import Update
+import logging
+
 from telegram import InlineKeyboardButton
 from telegram import InlineKeyboardMarkup
+from telegram import Update
 from telegram.ext import ContextTypes
 
-from app.scrapers.torob import get_price
-from app.database.repository import (
-    add_product,
-    get_product_by_url,
-)
+from app.database.repository import add_product
+from app.database.repository import get_product_by_url
+from app.services.price_service import PriceService
 
-print("PRICE FILE LOADED")
+logger = logging.getLogger(__name__)
+
+price_service = PriceService()
 
 
 async def price_command(
@@ -29,39 +35,36 @@ async def price_command(
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
     """
-    Handle /price command.
-    """
+    Handle the /price command.
 
-    print("PRICE COMMAND CALLED")
-    print(context.args)
+    Example:
+        /price https://torob.com/p/xxxxxxxx/
+    """
 
     if not update.message:
         return
 
-    print(
-        f"CHAT ID = {update.message.chat_id}"
-    )
-
     if not context.args:
-
         await update.message.reply_text(
             "Usage:\n"
             "/price https://torob.com/p/xxxxxxxx/"
         )
-
         return
 
     url = context.args[0]
 
     try:
-
         await update.message.reply_text(
             "Fetching product..."
         )
 
-        data = await get_price(url)
+        data = await price_service.search(url)
 
-        print(data)
+        if not data:
+            await update.message.reply_text(
+                "Unable to fetch product."
+            )
+            return
 
         title = data.get(
             "title",
@@ -97,14 +100,10 @@ async def price_command(
                 price=price,
             )
 
-            print(
-                "PRODUCT SAVED TO DATABASE"
-            )
-
-        else:
-
-            print(
-                "PRODUCT ALREADY EXISTS"
+            logger.info(
+                "Saved new product. chat_id=%s url=%s",
+                update.message.chat_id,
+                url,
             )
 
         caption = (
@@ -127,8 +126,6 @@ async def price_command(
             ]
         )
 
-        print("SENDING RESULT")
-
         if image:
 
             await update.message.reply_photo(
@@ -137,8 +134,6 @@ async def price_command(
                 reply_markup=keyboard,
             )
 
-            print("PHOTO SENT")
-
         else:
 
             await update.message.reply_text(
@@ -146,13 +141,12 @@ async def price_command(
                 reply_markup=keyboard,
             )
 
-            print("TEXT SENT")
+    except Exception:
 
-    except Exception as error:
-
-        print("ERROR OCCURRED")
-        traceback.print_exc()
+        logger.exception(
+            "Unexpected error in /price command."
+        )
 
         await update.message.reply_text(
-            f"ERROR:\n{repr(error)}"
+            "An unexpected error occurred."
         )
