@@ -1,15 +1,9 @@
 """
 app/handlers/price.py
 
-Telegram command handler for Torob price lookup.
+Telegram price lookup command.
 
-Responsibilities:
-- Read Telegram command arguments
-- Call PriceService
-- Save product information if needed
-- Display formatted results
-
-The handler should not communicate with the scraper directly.
+The handler delegates all business logic to PriceService.
 """
 
 from __future__ import annotations
@@ -21,8 +15,6 @@ from telegram import InlineKeyboardMarkup
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from app.database.repository import add_product
-from app.database.repository import get_product_by_url
 from app.services.price_service import PriceService
 
 logger = logging.getLogger(__name__)
@@ -34,36 +26,34 @@ async def price_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
-    """
-    Handle the /price command.
-
-    Example:
-        /price https://torob.com/p/xxxxxxxx/
-    """
 
     if not update.message:
         return
 
     if not context.args:
+
         await update.message.reply_text(
             "Usage:\n"
             "/price https://torob.com/p/xxxxxxxx/"
         )
+
         return
 
     url = context.args[0]
 
     try:
-        await update.message.reply_text(
-            "Fetching product..."
+
+        data = await price_service.track_product(
+            chat_id=update.message.chat_id,
+            url=url,
         )
 
-        data = await price_service.search(url)
-
         if not data:
+
             await update.message.reply_text(
                 "Unable to fetch product."
             )
+
             return
 
         title = data.get(
@@ -85,26 +75,6 @@ async def price_command(
             "image",
             "",
         )
-
-        existing_product = await get_product_by_url(
-            chat_id=update.message.chat_id,
-            url=url,
-        )
-
-        if not existing_product:
-
-            await add_product(
-                chat_id=update.message.chat_id,
-                url=url,
-                title=title,
-                price=price,
-            )
-
-            logger.info(
-                "Saved new product. chat_id=%s url=%s",
-                update.message.chat_id,
-                url,
-            )
 
         caption = (
             f"📦 Product\n"
@@ -144,7 +114,7 @@ async def price_command(
     except Exception:
 
         logger.exception(
-            "Unexpected error in /price command."
+            "Price command failed."
         )
 
         await update.message.reply_text(
