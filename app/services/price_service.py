@@ -2,13 +2,6 @@
 app/services/price_service.py
 
 Application service for product operations.
-
-Responsibilities:
-- Product lookup
-- Product tracking
-- Business rules
-
-Database access is delegated to repositories.
 """
 
 from __future__ import annotations
@@ -16,7 +9,9 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from app.repositories.product_repository import ProductRepository
+from app.repositories.product_repository import (
+    ProductRepository,
+)
 from app.scrapers import TorobScraper
 
 logger = logging.getLogger(__name__)
