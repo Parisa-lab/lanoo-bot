@@ -1,15 +1,19 @@
 """
 app/repositories/product_repository.py
 
-Repository for tracked products.
+Repository layer for tracked products.
 
 Responsibilities:
-- Database access
-- Product persistence
-- Product retrieval
-- Price updates
+- Create products
+- Find products
+- Load tracked products
+- Update prices
+- Create price history records
 
-Business logic does NOT belong here.
+This file contains ONLY database access code.
+No Telegram code.
+No scraper code.
+No business logic.
 """
 
 from __future__ import annotations
@@ -33,6 +37,9 @@ class ProductRepository:
         title: str,
         price: str,
     ) -> TrackedProduct:
+        """
+        Create a new tracked product.
+        """
 
         async with AsyncSessionLocal() as session:
 
@@ -55,6 +62,9 @@ class ProductRepository:
         chat_id: int,
         url: str,
     ):
+        """
+        Find a tracked product by URL and chat.
+        """
 
         async with AsyncSessionLocal() as session:
 
@@ -71,6 +81,9 @@ class ProductRepository:
         self,
         chat_id: int,
     ):
+        """
+        Get all products tracked by a user.
+        """
 
         async with AsyncSessionLocal() as session:
 
@@ -85,6 +98,10 @@ class ProductRepository:
     async def get_all_products(
         self,
     ):
+        """
+        Get every tracked product.
+        Used by the monitoring job.
+        """
 
         async with AsyncSessionLocal() as session:
 
@@ -99,6 +116,10 @@ class ProductRepository:
         product_id: int,
         new_price: str,
     ) -> None:
+        """
+        Update product price and store
+        a new price history record.
+        """
 
         async with AsyncSessionLocal() as session:
 
