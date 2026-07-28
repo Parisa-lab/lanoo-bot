@@ -1,8 +1,9 @@
 """
+app/container.py
+
 Application dependency container.
 
-Creates shared services used
-throughout the application.
+Creates shared application objects.
 """
 
 from app.repositories.product_repository import (
