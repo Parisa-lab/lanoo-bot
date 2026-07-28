@@ -1,12 +1,17 @@
 """
-Dependency container.
+Application dependency container.
 
-Creates shared application services.
+Creates shared services used
+throughout the application.
 """
 
-from app.repositories.product_repository import ProductRepository
+from app.repositories.product_repository import (
+    ProductRepository,
+)
 from app.scrapers import TorobScraper
-from app.services.price_service import PriceService
+from app.services.price_service import (
+    PriceService,
+)
 
 repository = ProductRepository()
 
