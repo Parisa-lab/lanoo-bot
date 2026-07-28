@@ -1,0 +1,47 @@
+"""
+Telegram notification service.
+
+Responsible for sending messages to users.
+
+Business logic should never call Telegram directly.
+"""
+
+from __future__ import annotations
+
+from telegram import Bot
+
+
+class NotificationService:
+    """
+    Telegram notification service.
+    """
+
+    def __init__(
+        self,
+        bot: Bot,
+    ) -> None:
+
+        self.bot = bot
+
+    async def send_price_change(
+        self,
+        chat_id: int,
+        product_title: str,
+        old_price: str,
+        new_price: str,
+        url: str,
+    ) -> None:
+        """
+        Send price change notification.
+        """
+
+        await self.bot.send_message(
+            chat_id=chat_id,
+            text=(
+                "📉 Price Change Detected\n\n"
+                f"Product: {product_title}\n\n"
+                f"Old Price: {old_price}\n"
+                f"New Price: {new_price}\n\n"
+                f"{url}"
+            ),
+        )
