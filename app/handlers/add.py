@@ -13,11 +13,11 @@ import logging
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from app.services.price_service import PriceService
+from app.container import price_service
+
 
 logger = logging.getLogger(__name__)
 
-price_service = PriceService()
 
 
 async def add_command(
