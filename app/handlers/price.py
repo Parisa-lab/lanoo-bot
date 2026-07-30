@@ -8,8 +8,10 @@ The handler delegates all business logic to PriceService.
 
 from __future__ import annotations
 
+import io
 import logging
 
+import httpx
 from telegram import InlineKeyboardButton
 from telegram import InlineKeyboardMarkup
 from telegram import Update
@@ -18,8 +20,6 @@ from telegram.ext import ContextTypes
 from app.container import price_service
 
 logger = logging.getLogger(__name__)
-
-
 
 
 async def price_command(
@@ -76,6 +76,11 @@ async def price_command(
             "",
         )
 
+        logger.info(
+            "Product image URL: %s",
+            image,
+        )
+
         caption = (
             f"📦 Product\n"
             f"{title}\n\n"
@@ -98,18 +103,43 @@ async def price_command(
 
         if image:
 
-            await update.message.reply_photo(
-                photo=image,
-                caption=caption,
-                reply_markup=keyboard,
-            )
+            try:
 
-        else:
+                async with httpx.AsyncClient(
+                    timeout=20.0,
+                    follow_redirects=True,
+                ) as client:
 
-            await update.message.reply_text(
-                text=caption,
-                reply_markup=keyboard,
-            )
+                    response = await client.get(
+                        image
+                    )
+
+                    response.raise_for_status()
+
+                photo = io.BytesIO(
+                    response.content
+                )
+
+                photo.name = "product.jpg"
+
+                await update.message.reply_photo(
+                    photo=photo,
+                    caption=caption,
+                    reply_markup=keyboard,
+                )
+
+                return
+
+            except Exception:
+
+                logger.exception(
+                    "Failed to send product image."
+                )
+
+        await update.message.reply_text(
+            text=caption,
+            reply_markup=keyboard,
+        )
 
     except Exception:
 
