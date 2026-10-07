@@ -6,8 +6,8 @@
 # Python
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
+*$py.class
+*.so
 
 # Virtual environments
 .venv/
@@ -23,6 +23,14 @@ htmlcov/
 .vscode/
 .idea/
 
-# OS files
+# Operating-system files
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
