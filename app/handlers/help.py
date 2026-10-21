@@ -12,4 +12,6 @@ async def help_command(
         "/start - Start bot\n"
         "/help - Show help\n"
         "/price <torob_url> - Get product price"
+        "/add - Add a new product\n"
+        "/list - List the products"
     )
